@@ -24,8 +24,12 @@ const AFTER_APPLY_URL =
   "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/after-apply.html";
 const APPROVED_URL =
   "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/application-approved.html";
+const COPR_URL =
+  "https://www.canada.ca/en/immigration-refugees-citizenship/services/permanent-residents/status/copr.html";
 const BIOMETRICS_URL =
   "https://www.canada.ca/en/immigration-refugees-citizenship/services/biometrics.html";
+const TRACKER_URL =
+  "https://www.canada.ca/en/immigration-refugees-citizenship/services/application/application-status-tracker.html";
 const MEDICAL_URL =
   "https://www.canada.ca/en/immigration-refugees-citizenship/services/application/medical-police/medical-exams/requirements-permanent-residents.html";
 const POLICE_URL =
@@ -614,7 +618,7 @@ const SEED_STEPS: Record<number, GuideStep[]> = {
       ],
     }),
     step({
-      id: "step-eca",
+      id: "step-profile-eca",
       sectionId: sectionId(6),
       position: 2,
       title: "Add your Educational Credential Assessment",
@@ -647,7 +651,7 @@ const SEED_STEPS: Record<number, GuideStep[]> = {
       ],
     }),
     step({
-      id: "step-language-test",
+      id: "step-profile-language-test",
       sectionId: sectionId(6),
       position: 3,
       title: "Add your language test and its dates",
@@ -1360,6 +1364,15 @@ const SEED_STEPS: Record<number, GuideStep[]> = {
       officialPageName: "After you apply",
       extraLinks: [
         { label: "After you apply", url: AFTER_APPLY_URL },
+        { label: "Application Status Tracker", url: TRACKER_URL },
+      ],
+      lastVerified: "2026-10-31",
+      screenshots: [
+        shot(
+          "seed-shot-aor",
+          "/guide/express-entry-aor.png",
+          "IRCC Application Status Tracker sign-in page, with the note that the tool can only be used after you receive an acknowledgement of receipt (AOR).",
+        ),
       ],
       commonMistakes: [
         "Missing a request because you stopped checking the email on the application.",
@@ -1377,6 +1390,7 @@ const SEED_STEPS: Record<number, GuideStep[]> = {
       officialPageName: "Biometrics",
       extraLinks: [
         { label: "Biometrics", url: BIOMETRICS_URL },
+        { label: "After you apply", url: AFTER_APPLY_URL },
       ],
       requiredDocuments: [
         {
@@ -1384,6 +1398,14 @@ const SEED_STEPS: Record<number, GuideStep[]> = {
           description:
             "IRCC sends it after you apply. Bring it to the collection point.",
         },
+      ],
+      lastVerified: "2026-10-31",
+      screenshots: [
+        shot(
+          "seed-shot-biometrics",
+          "/guide/express-entry-biometrics.png",
+          "IRCC After you apply page, Get your fingerprints and photo (biometrics) taken section: IRCC sends a letter, the fee is paid when you apply, and you have 30 days from the date on the letter.",
+        ),
       ],
       commonMistakes: [
         "Waiting for a second reminder — the 30 days start from the letter.",
@@ -1401,6 +1423,15 @@ const SEED_STEPS: Record<number, GuideStep[]> = {
       officialPageName: "After you apply",
       extraLinks: [
         { label: "After you apply", url: AFTER_APPLY_URL },
+        { label: "Application Status Tracker", url: TRACKER_URL },
+      ],
+      lastVerified: "2026-10-31",
+      screenshots: [
+        shot(
+          "seed-shot-track",
+          "/guide/express-entry-tracker.png",
+          "IRCC Application Status Tracker showing a Canadian Experience Class application with the status In Progress and the Applicants and pending actions section below.",
+        ),
       ],
     }),
   ],
@@ -1557,11 +1588,23 @@ const SEED_STEPS: Record<number, GuideStep[]> = {
       title: "Check your COPR details",
       instruction:
         "Check every detail on your eCOPR or COPR — your name, date of birth, passport details and the expiry date. Tell IRCC straight away if something is wrong.\nThe COPR is your proof of permanent residence until your PR card arrives.",
-      officialUrl: APPROVED_URL,
-      sourceUrl: APPROVED_URL,
-      officialPageName: "If we approve your application",
+      officialUrl: COPR_URL,
+      sourceUrl: COPR_URL,
+      officialPageName: "Confirmation of Permanent Residence document",
       extraLinks: [
+        {
+          label: "Confirmation of Permanent Residence document",
+          url: COPR_URL,
+        },
         { label: "If we approve your application", url: APPROVED_URL },
+      ],
+      lastVerified: "2026-10-31",
+      screenshots: [
+        shot(
+          "seed-shot-copr",
+          "/guide/express-entry-copr.png",
+          "Official sample of the Confirmation of Permanent Residence form showing the fields to check: family name, given name, date of birth, UCI, document number, travel document, country of issue and expiry date.",
+        ),
       ],
       commonMistakes: [
         "Booking travel before checking the expiry date on the COPR and visa.",
@@ -1574,9 +1617,24 @@ const SEED_STEPS: Record<number, GuideStep[]> = {
       title: "Travel to Canada before they expire",
       instruction:
         "If you're outside Canada, you must travel to Canada before your COPR and visa expire. At the border, show your COPR to the border services officer.\nKeep your COPR with your passport — you'll need it when you arrive.",
-      officialUrl: APPROVED_URL,
-      sourceUrl: APPROVED_URL,
-      officialPageName: "If we approve your application",
+      officialUrl: COPR_URL,
+      sourceUrl: COPR_URL,
+      officialPageName: "Confirmation of Permanent Residence document",
+      extraLinks: [
+        {
+          label: "Confirmation of Permanent Residence document",
+          url: COPR_URL,
+        },
+        { label: "If we approve your application", url: APPROVED_URL },
+      ],
+      lastVerified: "2026-10-31",
+      screenshots: [
+        shot(
+          "seed-shot-travel",
+          "/guide/express-entry-travel.png",
+          "IRCC Confirmation of Permanent Residence page: if you're outside Canada, you must travel to Canada and present your COPR at a Canadian port of entry before the validity date on the COPR.",
+        ),
+      ],
     }),
   ],
 };
@@ -1588,7 +1646,7 @@ export function createSeedGuide(): Guide {
     title: GUIDE_TITLE,
     description:
       "A step-by-step companion for the official IRCC Express Entry profile. Keep canada.ca open in another tab and follow along here. MapleRoute is an independent guide and is not affiliated with IRCC.",
-    version: "0.11.0",
+    version: "0.13.0",
     status: "draft",
     sections: SECTION_TITLES.map((title, index) => ({
       id: sectionId(index),

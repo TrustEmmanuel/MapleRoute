@@ -18,6 +18,7 @@ import {
   checkedCount,
   isRemoteId,
   type Guide,
+  type GuidePosition,
   type GuideSection,
   type GuideStep,
   type StepProgress,
@@ -45,6 +46,8 @@ type GuideContextValue = {
   reports: StepReport[];
   prep: PrepInputs;
   setPrep: (next: PrepInputs) => void;
+  position: GuidePosition | null;
+  setPosition: (next: GuidePosition) => void;
   toggleStep: (stepId: string, checked: boolean) => void;
   setDocumentReady: (stepId: string, name: string, ready: boolean) => void;
   saveNote: (stepId: string, note: string) => void;
@@ -112,6 +115,13 @@ function pickOne<T extends string>(
 const LANGUAGE_TEST_IDS = ["", "celpip", "ielts", "pte", "tef", "tcf"] as const;
 const EDUCATION_ROUTES = ["", "eca", "canadian"] as const;
 const ECA_LEVELS = ["", "degree", "diploma2", "diploma1", "secondary"] as const;
+
+function normalizePosition(value: unknown): GuidePosition | null {
+  if (!isRecord(value)) return null;
+  const sectionId = asText(value.sectionId).trim();
+  if (!sectionId) return null;
+  return { sectionId, stepId: asText(value.stepId).trim() || null };
+}
 
 function normalizePrep(value: unknown): PrepInputs {
   if (!isRecord(value)) return EMPTY_PREP;
@@ -262,7 +272,9 @@ function isOutdatedSeedGuide(guide: Guide | null) {
       guide?.version === "0.7.0" ||
       guide?.version === "0.8.0" ||
       guide?.version === "0.9.0" ||
-      guide?.version === "0.10.0")
+      guide?.version === "0.10.0" ||
+      guide?.version === "0.11.0" ||
+      guide?.version === "0.12.0")
   );
 }
 
@@ -335,6 +347,7 @@ export function GuideProvider({ children }: { children: ReactNode }) {
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [reports, setReports] = useState<StepReport[]>([]);
   const [prep, setPrepState] = useState<PrepInputs>(EMPTY_PREP);
+  const [position, setPositionState] = useState<GuidePosition | null>(null);
 
   useEffect(() => {
     const stored = readLocalValue<unknown>(CONTENT_KEY);
@@ -413,6 +426,7 @@ export function GuideProvider({ children }: { children: ReactNode }) {
       setNotes({});
       setReports([]);
       setPrepState(EMPTY_PREP);
+      setPositionState(null);
       setUserHydrated(true);
       return;
     }
@@ -436,12 +450,16 @@ export function GuideProvider({ children }: { children: ReactNode }) {
     const prepStored = normalizePrep(
       readLocalValue<unknown>(userKey("mapleroute.guide.prep", accountKey)),
     );
+    const positionStored = normalizePosition(
+      readLocalValue<unknown>(userKey("mapleroute.guide.position", accountKey)),
+    );
 
     setProgress(progressStored);
     setDocuments(documentsStored);
     setNotes(notesStored);
     setReports(reportsStored);
     setPrepState(prepStored);
+    setPositionState(positionStored);
     setUserHydrated(true);
 
     if (!supabase || !remoteUserId) return;
@@ -551,6 +569,14 @@ export function GuideProvider({ children }: { children: ReactNode }) {
       const safe = normalizePrep(next);
       setPrepState(safe);
       writeLocalValue(userKey("mapleroute.guide.prep", accountKey), safe);
+    },
+    [accountKey],
+  );
+
+  const setPosition = useCallback(
+    (next: GuidePosition) => {
+      setPositionState(next);
+      writeLocalValue(userKey("mapleroute.guide.position", accountKey), next);
     },
     [accountKey],
   );
@@ -831,6 +857,8 @@ export function GuideProvider({ children }: { children: ReactNode }) {
       reports,
       prep,
       setPrep,
+      position,
+      setPosition,
       toggleStep,
       setDocumentReady,
       saveNote,
@@ -863,6 +891,8 @@ export function GuideProvider({ children }: { children: ReactNode }) {
       reports,
       prep,
       setPrep,
+      position,
+      setPosition,
       toggleStep,
       setDocumentReady,
       saveNote,

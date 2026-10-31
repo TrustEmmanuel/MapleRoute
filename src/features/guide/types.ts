@@ -74,6 +74,11 @@ export type StepProgress = {
   checkedAt: string | null;
 };
 
+export type GuidePosition = {
+  sectionId: string;
+  stepId: string | null;
+};
+
 export type StepReport = {
   id: string;
   stepId: string;

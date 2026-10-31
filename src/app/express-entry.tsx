@@ -20,6 +20,7 @@ import { Text } from "@/components/ui/text";
 import { useIsWideWeb } from "@/components/web-nav";
 import { useCrs } from "@/features/crs/crs-provider";
 import { DoneToggle } from "@/features/guide/done-toggle";
+import { GuideStatsStrip } from "@/features/guide/guide-stats";
 import { useGuide } from "@/features/guide/guide-provider";
 import { PrepInputsPanel, hasPrepInputs } from "@/features/guide/prep-inputs";
 import { prepDoneCopy } from "@/features/guide/prep-done-copy";
@@ -72,6 +73,8 @@ export default function ExpressEntryProfileScreen() {
     notes,
     prep,
     setPrep,
+    position,
+    setPosition,
     toggleStep,
     setDocumentReady,
     saveNote,
@@ -94,7 +97,6 @@ export default function ExpressEntryProfileScreen() {
     () => checkedCount(allVisible.map((item) => item.step), progress),
     [allVisible, progress],
   );
-  const percent = totalSteps > 0 ? Math.round((doneSteps / totalSteps) * 100) : 0;
 
   const prepSection =
     guide.sections.find((section) => section.position === 0) ?? null;
@@ -183,6 +185,21 @@ export default function ExpressEntryProfileScreen() {
       }
     }
 
+    if (position) {
+      const section = guide.sections.find(
+        (item) => item.id === position.sectionId,
+      );
+      if (section) {
+        const sectionSteps = stepsVisibleTo(section, isAdmin);
+        const restored = position.stepId
+          ? sectionSteps.find((step) => step.id === position.stepId)
+          : null;
+        setActiveSectionId(section.id);
+        setActiveStepId((restored ?? sectionSteps[0])?.id ?? null);
+        return;
+      }
+    }
+
     const first = allVisible[0];
     setActiveStepId(first?.step.id ?? null);
     setActiveSectionId(first?.section.id ?? guide.sections[0]?.id ?? null);
@@ -193,7 +210,14 @@ export default function ExpressEntryProfileScreen() {
     activeSectionId,
     guide.sections,
     isAdmin,
+    position,
   ]);
+
+  useEffect(() => {
+    if (!hydrated || !activeSectionId || !activeStepId) return;
+    if (!allVisible.some((item) => item.step.id === activeStepId)) return;
+    setPosition({ sectionId: activeSectionId, stepId: activeStepId });
+  }, [hydrated, activeSectionId, activeStepId, allVisible, setPosition]);
 
   function scrollTop() {
     scrollRef.current?.scrollTo({ y: 0, animated: false });
@@ -374,41 +398,51 @@ export default function ExpressEntryProfileScreen() {
   if (!isWide) {
     return (
       <SafeAreaView edges={["top", "bottom"]} className="flex-1 bg-canvas">
+        <View className="border-b border-line px-5 pb-2.5 pt-2">
+          <View className="flex-row items-center justify-between">
+            <Link href="/" aria-label="MapleRoute home">
+              <BrandLockup />
+            </Link>
+            <View className="flex-row items-center gap-2">
+              {isAdmin ? (
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Edit guide content"
+                  onPress={() => router.push("/admin/guide")}
+                  className="h-9 w-9 items-center justify-center rounded-full border border-line active:bg-surface"
+                >
+                  <Ionicons
+                    name="construct-outline"
+                    size={17}
+                    color={colors.muted}
+                  />
+                </Pressable>
+              ) : null}
+              <View className="rounded-full border border-line px-2.5 py-1">
+                <Text variant="label" tone="muted">
+                  Step 2
+                </Text>
+              </View>
+            </View>
+          </View>
+
+          <GuideStatsStrip
+            className="mt-2"
+            doneSteps={doneSteps}
+            totalSteps={totalSteps}
+            crsScore={latest?.score ?? null}
+            readinessScore={readiness.score}
+          />
+        </View>
+
         <ScrollView
           ref={scrollRef}
           className="flex-1"
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ flexGrow: 1, paddingBottom: 130 }}
         >
-          <View className="px-5 pt-3">
-            <View className="flex-row items-center justify-between">
-              <Link href="/" aria-label="MapleRoute home">
-                <BrandLockup />
-              </Link>
-              <View className="flex-row items-center gap-2">
-                {isAdmin ? (
-                  <Pressable
-                    accessibilityRole="button"
-                    accessibilityLabel="Edit guide content"
-                    onPress={() => router.push("/admin/guide")}
-                    className="h-9 w-9 items-center justify-center rounded-full border border-line active:bg-surface"
-                  >
-                    <Ionicons
-                      name="construct-outline"
-                      size={17}
-                      color={colors.muted}
-                    />
-                  </Pressable>
-                ) : null}
-                <View className="rounded-full border border-line px-2.5 py-1">
-                  <Text variant="label" tone="muted">
-                    Step 2
-                  </Text>
-                </View>
-              </View>
-            </View>
-
-            <View className="mt-6">
+          <View className="px-5 pt-5">
+            <View>
               <Text className="text-[12px] font-inter-semibold text-muted">
                 Express Entry guide
               </Text>
@@ -418,34 +452,6 @@ export default function ExpressEntryProfileScreen() {
               <Text variant="small" tone="muted" className="mt-2">
                 {guide.description}
               </Text>
-            </View>
-
-            <View className="mt-5">
-              <View className="flex-row items-center justify-between">
-                <Text variant="small" tone="muted">
-                  Overall progress
-                </Text>
-                <Text variant="small" className="font-inter-semibold">
-                  {totalSteps === 0
-                    ? "Being verified"
-                    : `${doneSteps} of ${totalSteps} steps`}
-                </Text>
-              </View>
-              <View
-                accessibilityRole="progressbar"
-                accessibilityValue={{
-                  min: 0,
-                  max: totalSteps || 1,
-                  now: doneSteps,
-                  text: `${doneSteps} of ${totalSteps} steps done`,
-                }}
-                className="mt-2 h-1.5 overflow-hidden rounded-full bg-surface"
-              >
-                <View
-                  className="h-1.5 rounded-full bg-accent"
-                  style={{ width: `${percent}%` }}
-                />
-              </View>
             </View>
 
             <View className="mt-4 flex-row gap-3">
@@ -593,42 +599,13 @@ export default function ExpressEntryProfileScreen() {
             </Text>
           </View>
 
-          <View
-            className="w-[170px]"
-            accessibilityRole="progressbar"
-            accessibilityValue={{
-              min: 0,
-              max: totalSteps || 1,
-              now: doneSteps,
-              text: `${doneSteps} of ${totalSteps} steps done`,
-            }}
-          >
-            <View className="flex-row items-center justify-between">
-              <Text variant="small" tone="muted" className="text-[12px]">
-                Overall
-              </Text>
-              <Text variant="small" className="text-[12px] font-inter-semibold">
-                {percent}%
-              </Text>
-            </View>
-            <View className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-surface">
-              <View
-                className="h-1.5 rounded-full bg-accent"
-                style={{ width: `${percent}%` }}
-              />
-            </View>
-            <Text
-              variant="small"
-              tone="muted"
-              className="mt-1 text-[12px] leading-[16px]"
-            >
-              {totalSteps === 0
-                ? "Being verified"
-                : activeIndex >= 0
-                  ? `Step ${activeIndex + 1} of ${totalSteps}`
-                  : `${doneSteps} of ${totalSteps} done`}
-            </Text>
-          </View>
+          <GuideStatsStrip
+            className="w-[300px]"
+            doneSteps={doneSteps}
+            totalSteps={totalSteps}
+            crsScore={latest?.score ?? null}
+            readinessScore={readiness.score}
+          />
 
           <Pressable
             accessibilityRole="link"
