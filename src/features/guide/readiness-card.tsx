@@ -13,7 +13,13 @@ function bandColor(id: Readiness["band"]["id"]) {
   return colors.accent;
 }
 
-export function ReadinessCard({ readiness }: { readiness: Readiness }) {
+export function ReadinessCard({
+  readiness,
+  compact = false,
+}: {
+  readiness: Readiness;
+  compact?: boolean;
+}) {
   const color = bandColor(readiness.band.id);
 
   return (
@@ -68,39 +74,42 @@ export function ReadinessCard({ readiness }: { readiness: Readiness }) {
         {readiness.band.message}
       </Text>
 
-      <View className="mt-4 gap-2.5">
-        {readiness.parts.map((part) => {
-          const ratio = part.max > 0 ? part.earned / part.max : 0;
-          return (
-            <View key={part.key}>
-              <View className="flex-row items-center justify-between gap-3">
-                <Text variant="small" className="font-inter-medium">
-                  {part.label}
-                </Text>
-                <Text variant="small" tone="muted">
-                  {Math.round(part.earned)} / {part.max}
+      {compact ? null : (
+        <View className="mt-4 gap-2.5">
+          {readiness.parts.map((part) => {
+            const ratio = part.max > 0 ? part.earned / part.max : 0;
+            return (
+              <View key={part.key}>
+                <View className="flex-row items-center justify-between gap-3">
+                  <Text variant="small" className="font-inter-medium">
+                    {part.label}
+                  </Text>
+                  <Text variant="small" tone="muted">
+                    {Math.round(part.earned)} / {part.max}
+                  </Text>
+                </View>
+                <View className="mt-1 h-1.5 overflow-hidden rounded-full bg-surface">
+                  <View
+                    className="h-1.5 rounded-full"
+                    style={{
+                      width: `${Math.round(ratio * 100)}%`,
+                      backgroundColor:
+                        ratio >= 0.85 ? colors.success : color,
+                    }}
+                  />
+                </View>
+                <Text
+                  variant="small"
+                  tone="muted"
+                  className="mt-1 text-[12px] leading-[16px]"
+                >
+                  {part.detail}
                 </Text>
               </View>
-              <View className="mt-1 h-1.5 overflow-hidden rounded-full bg-surface">
-                <View
-                  className="h-1.5 rounded-full"
-                  style={{
-                    width: `${Math.round(ratio * 100)}%`,
-                    backgroundColor: ratio >= 0.85 ? colors.success : color,
-                  }}
-                />
-              </View>
-              <Text
-                variant="small"
-                tone="muted"
-                className="mt-1 text-[12px] leading-[16px]"
-              >
-                {part.detail}
-              </Text>
-            </View>
-          );
-        })}
-      </View>
+            );
+          })}
+        </View>
+      )}
 
       {readiness.nextFix ? (
         <View className="mt-4 flex-row items-start gap-2.5 rounded-control bg-surface px-3.5 py-3">
@@ -121,8 +130,9 @@ export function ReadinessCard({ readiness }: { readiness: Readiness }) {
         tone="muted"
         className="mt-4 text-[12px] leading-[18px]"
       >
-        This is a preparation score for this guide, not your CRS score. It
-        doesn't predict an invitation or a decision.
+        {compact
+          ? "Preparation score only — not your CRS score."
+          : "This is a preparation score for this guide, not your CRS score. It doesn't predict an invitation or a decision."}
       </Text>
     </Card>
   );

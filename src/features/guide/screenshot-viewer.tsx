@@ -1,5 +1,5 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Image,
   Modal,
@@ -114,6 +114,21 @@ export function ScreenshotViewer({
   const [zoom, setZoom] = useState(false);
   const [aspect, setAspect] = useState(16 / 10);
   const uri = useImageUri(screenshot?.storagePath ?? null);
+
+  useEffect(() => {
+    if (!uri) return;
+    let cancelled = false;
+    Image.getSize(
+      uri,
+      (width, height) => {
+        if (!cancelled && width > 0 && height > 0) setAspect(width / height);
+      },
+      () => {},
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, [uri]);
 
   if (!screenshot) {
     if (!showEmpty) return null;

@@ -6,6 +6,7 @@ import {
   Pressable,
   ScrollView,
   View,
+  useWindowDimensions,
   type ScrollViewInstance,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -21,6 +22,7 @@ import { useCrs } from "@/features/crs/crs-provider";
 import { DoneToggle } from "@/features/guide/done-toggle";
 import { useGuide } from "@/features/guide/guide-provider";
 import { PrepInputsPanel, hasPrepInputs } from "@/features/guide/prep-inputs";
+import { prepDoneCopy } from "@/features/guide/prep-done-copy";
 import { ProgressRing } from "@/features/guide/progress-ring";
 import { ReadinessCard } from "@/features/guide/readiness-card";
 import { computeReadiness } from "@/features/guide/readiness";
@@ -77,6 +79,7 @@ export default function ExpressEntryProfileScreen() {
   } = useGuide();
   const { latest } = useCrs();
   const isWide = useIsWideWeb();
+  const { width: windowWidth } = useWindowDimensions();
 
   const [activeSectionId, setActiveSectionId] = useState<string | null>(null);
   const [activeStepId, setActiveStepId] = useState<string | null>(null);
@@ -116,6 +119,12 @@ export default function ExpressEntryProfileScreen() {
     active?.section ??
     guide.sections.find((section) => section.id === activeSectionId) ??
     null;
+
+  const isPrepSection = Boolean(
+    prepSection && sectionForActive?.id === prepSection.id,
+  );
+  const activeHasInputs = Boolean(active && hasPrepInputs(active.step.id));
+  const showReadinessRail = isWide && windowWidth >= 1240 && isPrepSection;
   const sectionIndex = sectionForActive
     ? guide.sections.findIndex((section) => section.id === sectionForActive.id)
     : -1;
@@ -146,6 +155,8 @@ export default function ExpressEntryProfileScreen() {
     : null;
 
   const hasProgress = Object.values(progress).some((entry) => entry.checked);
+  const activeChecked = active ? Boolean(progress[active.step.id]?.checked) : false;
+  const activePrepDone = active ? prepDoneCopy(active.step.id) : null;
   const officialUrl = active?.step.officialUrl ?? null;
 
   useEffect(() => {
@@ -293,13 +304,14 @@ export default function ExpressEntryProfileScreen() {
   const firstVisitNote = !hasProgress ? (
     <View className="mt-5 flex-row items-start gap-2.5 rounded-control bg-surface px-4 py-3">
       <Ionicons
-        name="information-circle-outline"
+        name={isPrepSection ? "leaf-outline" : "information-circle-outline"}
         size={17}
         color={colors.muted}
       />
       <Text variant="small" tone="muted" className="flex-1">
-        Keep the official page open in another tab. Follow along here, tick each
-        step when you've done it there.
+        {isPrepSection
+          ? "These preparations happen before the profile. Take the test, get the ECA, find your NOC code, then gather your documents."
+          : "Keep the official page open in another tab. Follow along here, tick each step when you've done it there."}
       </Text>
     </View>
   ) : null;
@@ -337,6 +349,11 @@ export default function ExpressEntryProfileScreen() {
                 prep={prep}
                 teer={readiness.teer}
                 checked={Boolean(progress[active.step.id]?.checked)}
+                summary={
+                  showReadinessRail ? null : (
+                    <ReadinessCard readiness={readiness} compact />
+                  )
+                }
                 onChange={setPrep}
               />
             ) : null
@@ -350,7 +367,7 @@ export default function ExpressEntryProfileScreen() {
     );
 
   const readinessCard =
-    prepSection && sectionForActive?.id === prepSection.id ? (
+    isPrepSection && !showReadinessRail && !activeHasInputs ? (
       <ReadinessCard readiness={readiness} />
     ) : null;
 
@@ -491,9 +508,14 @@ export default function ExpressEntryProfileScreen() {
         {active ? (
           <View className="absolute bottom-0 left-0 right-0 border-t border-line bg-canvas px-5 pb-3 pt-2.5">
             <DoneToggle
-              checked={Boolean(progress[active.step.id]?.checked)}
-              label="Mark as done"
-              description="I've done this on the official page"
+              checked={activeChecked}
+              label={activePrepDone?.label ?? "Mark as done"}
+              description={
+                activeChecked
+                  ? "Saved. You can uncheck it any time."
+                  : activePrepDone?.description ??
+                    "I've done this on the official page"
+              }
               onChange={(checked) => toggleStep(active.step.id, checked)}
             />
           </View>
@@ -750,6 +772,25 @@ export default function ExpressEntryProfileScreen() {
             <Disclaimer className="mt-10" />
           </View>
         </ScrollView>
+
+        {showReadinessRail ? (
+          <View className="w-[300px] border-l border-line">
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ padding: 20, paddingBottom: 40 }}
+            >
+              <ReadinessCard readiness={readiness} />
+              <Text
+                variant="small"
+                tone="muted"
+                className="mt-3 px-1 text-[12px] leading-[18px]"
+              >
+                Fill in the fields on this step to move the score. Language and
+                education count the most.
+              </Text>
+            </ScrollView>
+          </View>
+        ) : null}
       </View>
     </SafeAreaView>
   );

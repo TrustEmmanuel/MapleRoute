@@ -1,4 +1,5 @@
 import { View } from "react-native";
+import type { ReactNode } from "react";
 
 import { ChoiceGroup } from "@/components/ui/choice-group";
 import { SelectField } from "@/components/ui/select-field";
@@ -29,12 +30,14 @@ export function PrepInputsPanel({
   prep,
   teer,
   checked,
+  summary,
   onChange,
 }: {
   stepId: string;
   prep: PrepInputs;
   teer: string | null;
   checked: boolean;
+  summary?: ReactNode;
   onChange: (next: PrepInputs) => void;
 }) {
   if (!hasPrepInputs(stepId)) return null;
@@ -42,13 +45,15 @@ export function PrepInputsPanel({
   const nocInvalid = prep.noc.length > 0 && prep.noc.length !== 5;
 
   return (
-    <View className="mt-7 rounded-card border border-line bg-surface p-4">
-      <Text variant="heading">Add what you have so far</Text>
+    <View className="mt-6 rounded-card border border-line bg-surface p-4">
+      <Text variant="heading">Add your result</Text>
       <Text variant="small" tone="muted" className="mt-1">
         {checked
-          ? "Step ticked. Add your result here and the score updates."
-          : "Done on the official side? Tick the step first, then add your result here."}
+          ? "Step ticked. The score updates as you fill this in."
+          : "Tick the step when it's done, then fill in your result."}
       </Text>
+
+      {summary ? <View className="mt-3">{summary}</View> : null}
 
       {stepId === "step-language-test" ? (
         <View className="mt-4">
@@ -76,7 +81,7 @@ export function PrepInputsPanel({
                   }
                   keyboardType="number-pad"
                   maxLength={2}
-                  placeholder="7"
+                  placeholder="Enter score"
                 />
               </View>
             ))}

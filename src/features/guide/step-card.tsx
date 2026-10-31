@@ -11,6 +11,7 @@ import { colors } from "@/theme/theme";
 
 import { DoneToggle, ReadyToggle } from "./done-toggle";
 import { personalizedHint } from "./personalize";
+import { prepDoneCopy } from "./prep-done-copy";
 import { ScreenshotViewer } from "./screenshot-viewer";
 import {
   isStepPublishable,
@@ -87,6 +88,7 @@ export function StepCard({
   const hint = personalizedHint(step.personalizationKey, crsInputs);
   const domain = sourceDomain(step.sourceUrl);
   const published = isStepPublishable(step);
+  const prepDone = prepDoneCopy(step.id);
 
   const links = [
     ...(isSafeHttpUrl(step.officialUrl)
@@ -190,11 +192,20 @@ export function StepCard({
           )
         : null}
 
+      {prepInputs}
+
       <ScreenshotViewer screenshot={screenshot ?? null} showEmpty={isAdmin} />
 
       {step.requiredDocuments.length > 0 ? (
         <View className="mt-8">
           <Text variant="heading">Documents you need</Text>
+          {section.position <= 11 ? (
+            <Text variant="small" tone="muted" className="mt-1">
+              Nothing is uploaded while you build the profile — just keep these
+              handy. You upload them later, when you apply for permanent
+              residence.
+            </Text>
+          ) : null}
           {step.requiredDocuments.map((document) => {
             const key = `${step.id}::${document.name}`;
             return (
@@ -352,11 +363,12 @@ export function StepCard({
         <View className="mt-8">
           <DoneToggle
             checked={checked}
-            label="I've done this on the official page"
+            label={prepDone?.label ?? "I've done this on the official page"}
             description={
               checked
                 ? "Saved. You can uncheck it any time."
-                : "Tick this only after you finish it on the official site."
+                : prepDone?.description ??
+                  "Tick this only after you finish it on the official site."
             }
             onChange={(next) => {
               onToggleChecked(next);
@@ -365,8 +377,6 @@ export function StepCard({
           />
         </View>
       ) : null}
-
-      {prepInputs}
 
       <View className="mt-6 flex-row flex-wrap items-center justify-between gap-2">
         <Pressable

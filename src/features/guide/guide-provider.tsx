@@ -256,7 +256,13 @@ function isOutdatedSeedGuide(guide: Guide | null) {
       guide?.version === "0.3.0" ||
       guide?.version === "0.4.0" ||
       guide?.version === "0.5.0" ||
-      guide?.version === "0.6.0")
+      guide?.version === "0.6.0" ||
+      guide?.version === "0.6.1" ||
+      guide?.version === "0.6.2" ||
+      guide?.version === "0.7.0" ||
+      guide?.version === "0.8.0" ||
+      guide?.version === "0.9.0" ||
+      guide?.version === "0.10.0")
   );
 }
 
