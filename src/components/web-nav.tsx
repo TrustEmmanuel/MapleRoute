@@ -34,13 +34,13 @@ export function WebNav() {
 
   return (
     <View className="w-full border-b border-line bg-canvas">
-      <View className="mx-auto w-full max-w-[1080px] flex-row items-center justify-between px-8 py-3">
+      <View className="mx-auto w-full max-w-[1240px] flex-row items-center justify-between px-5 py-3">
         <View className="flex-row items-center gap-4">
           <Link href="/" aria-label="MapleRoute home">
             <BrandLockup />
           </Link>
           {loading ? null : latest ? (
-            <Link href="/crs" aria-label={`CRS score ${latest.score} out of 1200`}>
+            <Link href="/crs" aria-label={`CRS score ${latest.score} out of 1270`}>
               <CrsScoreBadge score={latest.score} band={latest.band} />
             </Link>
           ) : (

@@ -13,7 +13,8 @@ import { Text } from "@/components/ui/text";
 import { colors } from "@/theme/theme";
 
 import type { SavedScore } from "./crs-provider";
-import type { ScoreBand } from "./rules";
+import { latestDrawNote } from "./draws";
+import { CRS_MAX, CRS_RULES, type ScoreBand } from "./rules";
 
 const BAND_TEXT: Record<ScoreBand, string> = {
   strong: "text-success",
@@ -45,6 +46,7 @@ export function CrsResultView({
 }) {
   const { result } = saved;
   const benchmark = result.benchmark;
+  const drawNote = latestDrawNote();
   const [info, setInfo] = useState<"transferability" | "additional" | null>(
     null,
   );
@@ -78,7 +80,7 @@ export function CrsResultView({
             {saved.score.toLocaleString()}
           </Text>
           <Text variant="heading" tone="muted" className="pb-2">
-            / 1,200
+            / {CRS_MAX.toLocaleString()}
           </Text>
         </View>
         <Text variant="small" className={`mt-1 font-inter-semibold ${BAND_TEXT[saved.band]}`}>
@@ -90,10 +92,15 @@ export function CrsResultView({
 
         <View className="mt-5 rounded-control bg-surface p-3.5">
           <Text variant="small" tone="muted">
-            Colour compares your score with the latest Canadian Experience Class
-            draw: {benchmark.score} points on {formatDate(benchmark.drawDate)}.
-            Cutoffs change with every draw.
+            Colour compares your score with the latest Express Entry draw:{" "}
+            {benchmark.score} points on {formatDate(benchmark.drawDate)}{" "}
+            ({benchmark.drawName}). Cutoffs change with every draw.
           </Text>
+          {drawNote ? (
+            <Text variant="small" tone="muted" className="mt-2">
+              {drawNote}
+            </Text>
+          ) : null}
           <Text
             variant="small"
             className="mt-2 font-inter-semibold text-ink underline"
@@ -192,18 +199,28 @@ export function CrsResultView({
       <Card variant="muted" className="mt-4 p-4">
         <Text variant="small" tone="muted">
           Rules version {result.rulesVersion}, last verified{" "}
-          {formatDate(result.rulesLastVerified)}. This estimate uses IRCC&apos;s
-          rules in force until November 2, 2026 and does not include job offer
-          or high-wage occupation points. IRCC changes those rules on November
-          3, 2026.
+          {formatDate(result.rulesLastVerified)}. {CRS_RULES.rulesNote} A
+          qualifying job offer no longer needs an LMIA.
         </Text>
-        <Text
-          variant="small"
-          className="mt-2 font-inter-semibold text-ink underline"
-          onPress={() => void Linking.openURL(result.rulesSourceUrl)}
+        <View
+          className="mt-2 flex-row flex-wrap"
+          style={{ columnGap: 16, rowGap: 4 }}
         >
-          Official CRS criteria
-        </Text>
+          <Text
+            variant="small"
+            className="font-inter-semibold text-ink underline"
+            onPress={() => void Linking.openURL(result.rulesSourceUrl)}
+          >
+            Official CRS criteria
+          </Text>
+          <Text
+            variant="small"
+            className="font-inter-semibold text-ink underline"
+            onPress={() => void Linking.openURL(CRS_RULES.highWageUrl)}
+          >
+            High-wage occupation list
+          </Text>
+        </View>
       </Card>
 
       <Button

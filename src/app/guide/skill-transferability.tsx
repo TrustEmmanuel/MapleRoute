@@ -177,7 +177,7 @@ export default function SkillTransferabilityGuide() {
             "en-CA",
             { day: "numeric", month: "short", year: "numeric" },
           )}
-          . {CRS_RULES.nextChangeNote}
+          .
         </Text>
         <Text
           variant="small"

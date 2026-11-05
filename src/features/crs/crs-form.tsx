@@ -19,6 +19,9 @@ import {
   CLB_OPTIONS,
   EDUCATION_OPTIONS,
   FOREIGN_WORK_OPTIONS,
+  HIGH_WAGE_LENGTH_OPTIONS,
+  HIGH_WAGE_TIER_OPTIONS,
+  normalizeCrsInputs,
   SECOND_LANGUAGE_OPTIONS,
   SPOUSE_LANGUAGE_OPTIONS,
   WORK_YEARS_OPTIONS,
@@ -47,6 +50,19 @@ const YES_NO = [
   { value: "yes", label: "Yes" },
   { value: "no", label: "No" },
 ] as const;
+
+function SourceLink({ label, url }: { label: string; url: string }) {
+  return (
+    <Text
+      accessibilityRole="link"
+      variant="small"
+      className="font-inter-medium text-ink underline"
+      onPress={() => void Linking.openURL(url)}
+    >
+      {label}
+    </Text>
+  );
+}
 
 function FormSection({
   label,
@@ -85,13 +101,9 @@ export function CrsForm({
   onChangeDraft,
   onCancel,
 }: CrsFormProps) {
-  const [inputs, setInputs] = useState<CrsInputs>(() => {
-    const years = initial.foreignWorkYears as string;
-    if (years === "threePlus") {
-      return { ...initial, foreignWorkYears: "threeToFive" };
-    }
-    return initial;
-  });
+  const [inputs, setInputs] = useState<CrsInputs>(() =>
+    normalizeCrsInputs(initial),
+  );
   const [submitting, setSubmitting] = useState(false);
 
   function commit(next: CrsInputs) {
@@ -170,17 +182,21 @@ export function CrsForm({
 
       <Card variant="muted" className="mt-5 p-4">
         <Text variant="small" tone="muted">
-          This estimate uses IRCC&apos;s CRS rules in force until November 2,
-          2026. Job offer points are not included. IRCC adds high-wage
-          occupation points on November 3, 2026.
+          From November 3, 2026, IRCC awards Labour Market Integration points for
+          Canadian work experience in high-wage occupations or a qualifying
+          high-wage job offer, whichever scores higher. A qualifying job offer
+          no longer needs an LMIA.
         </Text>
-        <Text
-          variant="small"
-          className="mt-2 font-inter-semibold text-ink underline"
-          onPress={() => void Linking.openURL(CRS_RULES.sourceUrl)}
+        <View
+          className="mt-2 flex-row flex-wrap"
+          style={{ columnGap: 16, rowGap: 4 }}
         >
-          Read the official criteria
-        </Text>
+          <SourceLink label="What changed on Nov 3" url={CRS_RULES.changesUrl} />
+          <SourceLink
+            label="Official CRS criteria"
+            url={CRS_RULES.sourceUrl}
+          />
+        </View>
       </Card>
 
       <FormSection
@@ -263,14 +279,104 @@ export function CrsForm({
       <FormSection
         label="Work"
         title="Work experience"
-        description="Canadian work experience must be paid, skilled work in Canada within the last 10 years."
+        description="Canadian work experience must be paid, skilled work in Canada within the last 10 years. IRCC uses Canadian work experience or a qualifying job offer for the Labour Market Integration factor, whichever scores higher — not both."
       >
         <SelectField
           label="Canadian work experience"
           value={inputs.canadianWorkYears}
           options={WORK_YEARS_OPTIONS}
-          onChange={(value) => update("canadianWorkYears", value)}
+          onChange={(value) =>
+            commit({
+              ...inputs,
+              canadianWorkYears: value,
+              ...(value === "none"
+                ? {
+                    highWageExperience: false,
+                    highWageTier: null,
+                    highWageLength: "under12" as const,
+                  }
+                : {}),
+            })
+          }
         />
+
+        {inputs.canadianWorkYears !== "none" ? (
+          <>
+            <ChoiceGroup
+              label="High-wage occupation experience"
+              value={inputs.highWageExperience ? "yes" : "no"}
+              options={[...YES_NO]}
+              onChange={(value) =>
+                commit({
+                  ...inputs,
+                  highWageExperience: value === "yes",
+                  highWageTier:
+                    value === "yes"
+                      ? (inputs.highWageTier ?? "onePointThree")
+                      : null,
+                })
+              }
+              helper="Canadian work in a job on IRCC's high-wage occupation list. The level comes from the occupation's NOC median wage across Canada, not your own salary."
+            />
+
+            {inputs.highWageExperience ? (
+              <>
+                <SelectField
+                  label="High-wage occupation level"
+                  value={inputs.highWageTier ?? "onePointThree"}
+                  options={HIGH_WAGE_TIER_OPTIONS}
+                  onChange={(value) => update("highWageTier", value)}
+                  helper="Find your NOC on IRCC's list to choose the right level."
+                />
+                <SelectField
+                  label="Time in high-wage occupations"
+                  value={inputs.highWageLength ?? "under12"}
+                  options={HIGH_WAGE_LENGTH_OPTIONS}
+                  onChange={(value) => update("highWageLength", value)}
+                  helper="At least 12 months (1,560 hours) is needed for high-wage points. Part-time work and more than one eligible job can count."
+                />
+                <SourceLink
+                  label="Open IRCC's high-wage occupation list"
+                  url={CRS_RULES.highWageUrl}
+                />
+              </>
+            ) : null}
+          </>
+        ) : null}
+
+        <ChoiceGroup
+          label="Qualifying job offer in a high-wage occupation"
+          value={inputs.jobOffer ? "yes" : "no"}
+          options={[...YES_NO]}
+          onChange={(value) =>
+            commit({
+              ...inputs,
+              jobOffer: value === "yes",
+              jobOfferTier:
+                value === "yes"
+                  ? (inputs.jobOfferTier ?? "onePointThree")
+                  : null,
+            })
+          }
+          helper="Full-time, continuous work for at least one year after you become a permanent resident. An LMIA is not required. IRCC decides whether the offer is genuine."
+        />
+
+        {inputs.jobOffer ? (
+          <>
+            <SelectField
+              label="Job offer high-wage level"
+              value={inputs.jobOfferTier ?? "onePointThree"}
+              options={HIGH_WAGE_TIER_OPTIONS}
+              onChange={(value) => update("jobOfferTier", value)}
+              helper="The level comes from the job's NOC on IRCC's high-wage list."
+            />
+            <SourceLink
+              label="Open IRCC's high-wage occupation list"
+              url={CRS_RULES.highWageUrl}
+            />
+          </>
+        ) : null}
+
         <SelectField
           label="Foreign work experience"
           value={inputs.foreignWorkYears}

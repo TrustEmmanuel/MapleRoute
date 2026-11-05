@@ -226,9 +226,13 @@ export default function AdditionalPointsGuide() {
       </View>
 
       <Card className="mt-4 p-4">
-        <Text variant="small" tone="muted">
-          Arranged employment (job offer) points are not included in this
-          estimate. {CRS_RULES.nextChangeNote}
+        <Text variant="small" tone="muted">{CRS_RULES.rulesNote}</Text>
+        <Text
+          variant="small"
+          className="mt-2 font-inter-semibold text-ink underline"
+          onPress={() => void Linking.openURL(CRS_RULES.highWageUrl)}
+        >
+          High-wage occupation list on canada.ca
         </Text>
       </Card>
 

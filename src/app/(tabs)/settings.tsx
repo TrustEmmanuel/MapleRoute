@@ -15,6 +15,7 @@ import { Text } from "@/components/ui/text";
 import { useIsWideWeb } from "@/components/web-nav";
 import { useAuth } from "@/features/auth/auth-provider";
 import { useCrs } from "@/features/crs/crs-provider";
+import { CRS_MAX } from "@/features/crs/rules";
 import { useGuide } from "@/features/guide/guide-provider";
 import { getSupabaseHost } from "@/lib/supabase";
 import { colors } from "@/theme/theme";
@@ -125,7 +126,7 @@ export default function SettingsScreen() {
           <Divider />
           <DetailRow
             label="CRS score"
-            value={latest ? `${latest.score} / 1,200` : "Not checked"}
+            value={latest ? `${latest.score} / ${CRS_MAX.toLocaleString()}` : "Not checked"}
           />
           <Divider />
           <DetailRow label="Supabase" value={hostedProject ?? "Not configured"} />

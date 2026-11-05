@@ -107,13 +107,13 @@ The EAS profiles in `eas.json` are `development` (day-to-day), `preview` (tester
 
 ## The CRS calculator: scope and limits
 
-The calculator implements IRCC's published CRS grid for the rules in force **until November 2, 2026** (grid version `2025-03-25`). The rules, benchmark, and source links live in `src/features/crs/rules.ts`; the scoring engine is `src/features/crs/calculate.ts`.
+The calculator implements IRCC's published CRS grid for the rules in force **from November 3, 2026** (rules version `2026-11-03`). The rules and source links live in `src/features/crs/rules.ts`; the scoring engine is `src/features/crs/calculate.ts`. The latest draw shown on the home and result screens comes from `content/draws.json`.
 
-- **Not included:** job offer points, or the high-wage occupation points IRCC introduces on **November 3, 2026**. Both are disclosed in the form and the result screen rather than guessed at.
+- **Labour Market Integration.** Canadian work experience in a high-wage occupation and a qualifying high-wage job offer are scored in the same factor, and the higher of the two is used — never both. Tiers and point values follow the IRCC CRS criteria page. The old arranged-employment (LMIA) points are gone.
 - **First official language is assumed to be English.** French is captured through the second-language section and the NCLB 7 bonus. A French-first applicant should read the result as an estimate.
 - **It is an estimate.** IRCC calculates the official score after you submit an Express Entry profile. Always confirm on [canada.ca](https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/check-score/crs-criteria.html).
-- **Colour bands** compare against the latest Canadian Experience Class draw at the time of writing: **519 on October 15, 2026**, 2,500 invitations. Cutoffs change every draw, so the comparison is labelled with its date.
-- The score is shown as **X / 1,200** with a percentage bar, not a misleading X/100.
+- **Colour bands** compare against the latest Express Entry draw in `content/draws.json` (**477 on October 28, 2026**, Transport Occupations, 2026-Version 2). Cutoffs change every draw, so the comparison is labelled with its date and stream. If draws are paused or the latest draw is more than 14 days old, the screens show IRCC's paused-draws note instead of implying a current cutoff.
+- The score is shown as **X / 1,270** with a percentage bar, not a misleading X/100. The maximum is 1,270 with or without a spouse.
 
 ## Scripts
 
@@ -124,6 +124,7 @@ The calculator implements IRCC's published CRS grid for the rules in force **unt
 | `npm run web` | Start the web version in a browser |
 | `npm run android` / `npm run ios` | Open on an emulator/simulator |
 | `npm run typecheck` | TypeScript check with no output files |
+| `npm test` | Run the CRS unit tests with Vitest |
 | `npm run a11y:contrast` | Check design tokens against WCAG AA contrast ratios |
 
 ## Project structure
@@ -151,7 +152,8 @@ src/
   features/
     account/clear-account-data.ts  Per-account storage cleanup for deletion
     auth/auth-provider.tsx Session, sign in/up/out, delete, preview mode
-    crs/rules.ts           Official CRS grid, benchmark, bands, metadata
+    crs/rules.ts           Official CRS grid, bands, metadata
+    crs/draws.ts           Latest draw data loaded from content/draws.json
     crs/calculate.ts       Pure scoring engine (tested)
     crs/crs-provider.tsx   Load/save scores; Supabase + device fallback
     crs/crs-form.tsx       Questionnaire

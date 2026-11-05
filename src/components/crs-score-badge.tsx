@@ -1,6 +1,6 @@
 import { View } from "react-native";
 
-import type { ScoreBand } from "@/features/crs/rules";
+import { CRS_MAX, type ScoreBand } from "@/features/crs/rules";
 
 import { Text } from "./ui/text";
 
@@ -29,9 +29,9 @@ const BAND_STYLES: Record<
 };
 
 export const BAND_LABELS: Record<ScoreBand, string> = {
-  strong: "At or above the latest CEC cutoff",
-  average: "Within 49 points of the latest CEC cutoff",
-  low: "More than 49 points below the latest CEC cutoff",
+  strong: "At or above the latest Express Entry draw",
+  average: "Within 49 points of the latest Express Entry draw",
+  low: "More than 49 points below the latest Express Entry draw",
 };
 
 const BAND_SHORT: Record<ScoreBand, string> = {
@@ -69,7 +69,7 @@ export function CrsScoreBadge({
   return (
     <View
       accessibilityRole="text"
-      accessibilityLabel={`CRS score ${score} out of 1200. ${BAND_LABELS[band]}.`}
+      accessibilityLabel={`CRS score ${score} out of ${CRS_MAX}. ${BAND_LABELS[band]}.`}
       className={`flex-row items-center gap-2 rounded-full ${palette.container} ${
         large ? "px-4 py-2.5" : "px-3 py-1.5"
       }`}
@@ -96,7 +96,7 @@ export function CrsScoreBar({
   score: number;
   band: ScoreBand;
 }) {
-  const percent = Math.min(100, Math.round((score / 1200) * 100));
+  const percent = Math.min(100, Math.round((score / CRS_MAX) * 100));
 
   return (
     <View>
@@ -108,7 +108,7 @@ export function CrsScoreBar({
       </View>
       <View className="mt-2 flex-row justify-between">
         <Text variant="small" tone="muted">
-          {score.toLocaleString()} of 1,200 points
+          {score.toLocaleString()} of {CRS_MAX.toLocaleString()} points
         </Text>
         <Text variant="small" tone="muted">
           {percent}% of maximum

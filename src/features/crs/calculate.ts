@@ -1,13 +1,15 @@
+import { LATEST_DRAW, type LatestDraw } from "./draws";
 import {
   ABILITIES,
   AGE_POINTS,
-  BENCHMARK,
   CANADIAN_WORK_POINTS,
   CLB_RANK,
   CORE_EDUCATION_POINTS,
   CRS_RULES,
   educationTransferTier,
   FIRST_LANGUAGE_POINTS,
+  HIGH_WAGE_JOB_OFFER_POINTS,
+  HIGH_WAGE_WORK_POINTS,
   scoreBand,
   SECOND_LANGUAGE_POINTS,
   SPOUSE_EDUCATION_POINTS,
@@ -45,9 +47,7 @@ export type CrsResult = {
   rulesEffectiveFrom: string;
   rulesLastVerified: string;
   rulesSourceUrl: string;
-  nextChangeDate: string;
-  nextChangeNote: string;
-  benchmark: typeof BENCHMARK;
+  benchmark: LatestDraw;
 };
 
 const WORK_YEARS_VALUE: Record<WorkYears, number> = {
@@ -148,15 +148,32 @@ export function calculateCrs(inputs: CrsInputs): CrsResult {
       )
     : 0;
   const canadianWorkYearsValue = WORK_YEARS_VALUE[inputs.canadianWorkYears];
-  const canadianWorkPoints =
+  const workLengthPoints =
     CANADIAN_WORK_POINTS[inputs.canadianWorkYears][spouseIndex];
+  const highWagePoints =
+    inputs.highWageExperience &&
+    inputs.highWageLength === "12plus" &&
+    inputs.highWageTier
+      ? HIGH_WAGE_WORK_POINTS[inputs.highWageTier]
+      : 0;
+  const workExperiencePoints = workLengthPoints + highWagePoints;
+  const jobOfferPoints =
+    inputs.jobOffer && inputs.jobOfferTier
+      ? HIGH_WAGE_JOB_OFFER_POINTS[inputs.jobOfferTier]
+      : 0;
+  // The factor scores either Canadian work experience or a qualifying job
+  // offer, never both. The higher option is used.
+  const labourMarketPoints = Math.min(
+    hasSpouse ? 140 : 150,
+    Math.max(workExperiencePoints, jobOfferPoints),
+  );
 
   const corePoints =
     agePoints +
     educationPoints +
     firstLanguagePoints +
     secondLanguagePoints +
-    canadianWorkPoints;
+    labourMarketPoints;
 
   const coreItems: BreakdownItem[] = [
     { label: "Age", points: agePoints },
@@ -169,7 +186,23 @@ export function calculateCrs(inputs: CrsInputs): CrsResult {
       points: secondLanguagePoints,
     });
   }
-  coreItems.push({ label: "Canadian work experience", points: canadianWorkPoints });
+  if (jobOfferPoints > workExperiencePoints) {
+    coreItems.push({
+      label: "High-wage job offer",
+      points: labourMarketPoints,
+    });
+  } else {
+    coreItems.push({
+      label: "Canadian work experience",
+      points: workLengthPoints,
+    });
+    if (highWagePoints > 0) {
+      coreItems.push({
+        label: "High-wage occupation experience",
+        points: highWagePoints,
+      });
+    }
+  }
 
   const spouseEducationPoints = hasSpouse
     ? SPOUSE_EDUCATION_POINTS[inputs.spouseEducation ?? "lessThanSecondary"]
@@ -290,7 +323,7 @@ export function calculateCrs(inputs: CrsInputs): CrsResult {
 
   return {
     total,
-    band: scoreBand(total),
+    band: scoreBand(total, LATEST_DRAW.score),
     core: corePoints,
     spouse: spousePoints,
     transferability: transferabilityPoints,
@@ -300,7 +333,7 @@ export function calculateCrs(inputs: CrsInputs): CrsResult {
         key: "core",
         label: "Core human capital",
         points: corePoints,
-        max: hasSpouse ? 460 : 500,
+        max: hasSpouse ? 530 : 570,
         items: coreItems,
       },
       ...(hasSpouse
@@ -337,8 +370,6 @@ export function calculateCrs(inputs: CrsInputs): CrsResult {
     rulesEffectiveFrom: CRS_RULES.effectiveFrom,
     rulesLastVerified: CRS_RULES.lastVerified,
     rulesSourceUrl: CRS_RULES.sourceUrl,
-    nextChangeDate: CRS_RULES.nextChangeDate,
-    nextChangeNote: CRS_RULES.nextChangeNote,
-    benchmark: BENCHMARK,
+    benchmark: LATEST_DRAW,
   };
 }

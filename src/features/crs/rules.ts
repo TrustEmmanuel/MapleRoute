@@ -1,13 +1,48 @@
 export const CRS_RULES = {
-  version: "2025-03-25",
-  effectiveFrom: "2025-03-25",
-  lastVerified: "2026-10-29",
+  version: "2026-11-03",
+  effectiveFrom: "2026-11-03",
+  lastVerified: "2026-11-05",
   sourceUrl:
     "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/check-score/crs-criteria.html",
-  nextChangeDate: "2026-11-03",
-  nextChangeNote:
-    "IRCC changes Canadian work experience and job offer points on November 3, 2026. This estimate uses the rules in force until November 2, 2026.",
+  changesUrl:
+    "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/changes.html",
+  highWageUrl:
+    "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/check-score/high-wage.html",
+  newsUrl:
+    "https://www.canada.ca/en/immigration-refugees-citizenship/news/2026/10/changes-to-express-entry-for-high-wage-occupations.html",
+  rulesNote:
+    "From November 3, 2026, the Labour Market Integration factor awards points for Canadian work experience in high-wage occupations or a qualifying high-wage job offer, whichever scores higher.",
 } as const;
+
+// Core 570 + skill transferability 100 + additional 600 = 1,270 without a
+// spouse; with a spouse, core 530 + spouse 40 + 100 + 600 = 1,270.
+export const CRS_MAX = 1270;
+
+export type HighWageTier = "twice" | "onePointFive" | "onePointThree";
+export type HighWageLength = "under12" | "12plus";
+
+export const HIGH_WAGE_TIER_LABELS: Record<HighWageTier, string> = {
+  twice: "At least 2× the average median wage",
+  onePointFive: "At least 1.5×, but under 2×",
+  onePointThree: "At least 1.3×, but under 1.5×",
+};
+
+export const HIGH_WAGE_LENGTH_LABELS: Record<HighWageLength, string> = {
+  under12: "Less than 12 months",
+  "12plus": "12 months or more",
+};
+
+export const HIGH_WAGE_WORK_POINTS: Record<HighWageTier, number> = {
+  twice: 70,
+  onePointFive: 40,
+  onePointThree: 20,
+};
+
+export const HIGH_WAGE_JOB_OFFER_POINTS: Record<HighWageTier, number> = {
+  twice: 100,
+  onePointFive: 70,
+  onePointThree: 50,
+};
 
 export type Ability = "reading" | "writing" | "speaking" | "listening";
 
@@ -42,6 +77,11 @@ export type CrsInputs = {
   hasSecondLanguage: boolean;
   secondLanguage: Record<Ability, SecondLanguageBand>;
   canadianWorkYears: WorkYears;
+  highWageExperience?: boolean;
+  highWageTier?: HighWageTier | null;
+  highWageLength?: HighWageLength;
+  jobOffer?: boolean;
+  jobOfferTier?: HighWageTier | null;
   foreignWorkYears: ForeignWorkYears;
   certificateOfQualification: boolean;
   spouseEducation: EducationLevel | null;
@@ -262,20 +302,10 @@ export function educationTransferTier(
   }
 }
 
-export const BENCHMARK = {
-  score: 519,
-  drawName: "Canadian Experience Class",
-  drawDate: "2026-10-15",
-  invitations: 2500,
-  sourceUrl:
-    "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/rounds-invitations.html",
-  lastVerified: "2026-10-29",
-} as const;
-
 export type ScoreBand = "strong" | "average" | "low";
 
-export function scoreBand(score: number): ScoreBand {
-  if (score >= BENCHMARK.score) return "strong";
-  if (score >= BENCHMARK.score - 49) return "average";
+export function scoreBand(score: number, cutoff: number): ScoreBand {
+  if (score >= cutoff) return "strong";
+  if (score >= cutoff - 49) return "average";
   return "low";
 }
