@@ -11,6 +11,7 @@
     "ios": "expo start --ios",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
+    "smoke": "node --no-warnings scripts/smoke-test.mjs --build",
     "a11y:contrast": "node --no-warnings scripts/check-contrast.mjs",
     "pnp:sources": "node --no-warnings scripts/check-pnp-sources.mjs",
     "guide:sources": "node --no-warnings scripts/check-guide-sources.mjs"

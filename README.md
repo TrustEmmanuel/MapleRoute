@@ -125,6 +125,7 @@ The calculator implements IRCC's published CRS grid for the rules in force **fro
 | `npm run android` / `npm run ios` | Open on an emulator/simulator |
 | `npm run typecheck` | TypeScript check with no output files |
 | `npm test` | Run the CRS unit tests with Vitest |
+| `npm run smoke` | Build the web export and smoke-test sign-in, CRS, guide, offline reading and the public share card in headless Edge |
 | `npm run a11y:contrast` | Check design tokens against WCAG AA contrast ratios |
 
 ## Project structure
