@@ -14,6 +14,12 @@ import { useAuth } from "@/features/auth/auth-provider";
 import { useCrs } from "@/features/crs/crs-provider";
 import { useGuide } from "@/features/guide/guide-provider";
 import { checkedCount, visibleSteps } from "@/features/guide/types";
+import {
+  deadlineLine,
+  nextDeadline,
+  todayIso,
+} from "@/features/planning/documents";
+import { useDocumentDates } from "@/features/planning/use-document-dates";
 import { downloadCheckInIcs, formatCheckInDate } from "@/features/retention/check-in";
 import { useCheckInReminder } from "@/features/retention/use-check-in-reminder";
 import {
@@ -51,6 +57,7 @@ export default function HomeScreen() {
     setInDays,
     clear: clearReminder,
   } = useCheckInReminder();
+  const { dates: documentDates, ready: documentsReady } = useDocumentDates();
   const isWideWeb = useIsWideWeb();
 
   const name = accountEmail?.split("@")[0]?.replace(/[._-]+/g, " ");
@@ -78,6 +85,19 @@ export default function HomeScreen() {
     : 0;
   const latestUpdate = GUIDE_UPDATES[0];
   const dueLabel = dueDate ? formatCheckInDate(dueDate) : "";
+
+  const nextDocument = nextDeadline(documentDates, todayIso());
+  const documentDetail = !documentsReady
+    ? "Add the dates on your passport, language test, ECA, police certificate and medical exam."
+    : nextDocument
+      ? `${deadlineLine(nextDocument.rule, nextDocument.date, nextDocument.status)}.${
+          nextDocument.status.state === "expired"
+            ? " This one is past its window."
+            : nextDocument.status.state === "soon"
+              ? " This one needs attention."
+              : ""
+        }`
+      : "Add the dates on your documents and this card will show what comes due first.";
 
   const guideDetail = !hydrated
     ? "Loading your progress…"
@@ -191,6 +211,28 @@ export default function HomeScreen() {
             />
           </Card>
         )}
+      </View>
+
+      <View className="mt-8">
+        <Text variant="label" tone="muted">
+          Documents & dates
+        </Text>
+        <Card className="mt-3 p-5">
+          <Text variant="heading">
+            {documentsReady && nextDocument
+              ? nextDocument.rule.title
+              : "Keep your documents in date"}
+          </Text>
+          <Text variant="small" tone="muted" className="mt-2">
+            {documentDetail}
+          </Text>
+          <Button
+            className="mt-4"
+            variant="secondary"
+            label="Open documents & dates"
+            onPress={() => router.push("/documents")}
+          />
+        </Card>
       </View>
 
       {latest ? (
