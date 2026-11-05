@@ -25,7 +25,8 @@ import { colors } from "@/theme/theme";
 
 export default function DocumentsScreen() {
   const { signedIn, loading } = useAuth();
-  const { dates, ready, saveDate, clearDate } = useDocumentDates();
+  const { dates, have, scores, ready, saveDate, clearDate, toggleHave, saveScore } =
+    useDocumentDates();
   const today = todayIso();
   const saved = ready ? planDocuments(dates, today) : [];
   const next = ready ? nextDeadline(dates, today) : null;
@@ -113,9 +114,16 @@ export default function DocumentsScreen() {
             key={rule.key}
             rule={rule}
             date={dates[rule.key]}
+            has={Boolean(have[rule.key])}
+            score={scores[rule.key]}
             today={today}
             onSave={(value) => saveDate(rule.key, value)}
-            onClear={() => clearDate(rule.key)}
+            onClear={() => {
+              clearDate(rule.key);
+              saveScore(rule.key, null);
+            }}
+            onToggleHave={() => toggleHave(rule.key)}
+            onSaveScore={(value) => saveScore(rule.key, value)}
           />
         ))}
       </View>

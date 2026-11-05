@@ -2,6 +2,10 @@ export type DocumentKey = "passport" | "language" | "eca" | "police" | "medical"
 
 export type DocumentDates = Partial<Record<DocumentKey, string>>;
 
+export type DocumentHave = Partial<Record<DocumentKey, true>>;
+
+export type DocumentScores = Partial<Record<DocumentKey, string>>;
+
 type DeadlineKind = "useBefore" | "validUntil" | "submitBy" | "renewAfter";
 
 export type DocumentRule = {
@@ -18,6 +22,9 @@ export type DocumentRule = {
   sourceUrl: string;
   sourceName: string;
   checkedOn: string;
+  haveLabel?: string;
+  note?: string;
+  score?: { label: string; helper: string };
 };
 
 const CHECKED_ON = "2026-11-05";
@@ -64,6 +71,12 @@ export const DOCUMENT_RULES: DocumentRule[] = [
     sourceUrl: LANGUAGE_URL,
     sourceName: "canada.ca — Language testing",
     checkedOn: CHECKED_ON,
+    haveLabel: "I have done this",
+    note: "IELTS results expire after 2 years. IRCC only accepts them while they are less than 2 years old.",
+    score: {
+      label: "IELTS band score",
+      helper: "Your overall band, from 1 to 9. Leave it empty if you took CELPIP, TEF or TCF.",
+    },
   },
   {
     key: "eca",
@@ -134,6 +147,10 @@ export function isValidDateInput(value: string) {
     date.getUTCMonth() === month - 1 &&
     date.getUTCDate() === day
   );
+}
+
+export function isValidBandScore(value: string) {
+  return /^(?:[1-8](?:\.5)?|9(?:\.0)?)$/.test(value);
 }
 
 export function addMonthsIso(value: string, months: number) {

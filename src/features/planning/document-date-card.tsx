@@ -5,6 +5,7 @@ import { Pressable, View } from "react-native";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Text } from "@/components/ui/text";
+import { TextField } from "@/components/ui/text-field";
 import { openExternal } from "@/lib/links";
 import { colors } from "@/theme/theme";
 
@@ -12,6 +13,7 @@ import {
   deadlineLine,
   documentStatus,
   formatDocumentDate,
+  isValidBandScore,
   isValidDateInput,
   statusBadge,
   statusDetail,
@@ -56,35 +58,58 @@ export function StatusPill({
 export function DocumentDateCard({
   rule,
   date,
+  has,
+  score,
   today,
   onSave,
   onClear,
+  onToggleHave,
+  onSaveScore,
 }: {
   rule: DocumentRule;
   date: string | undefined;
+  has: boolean;
+  score: string | undefined;
   today: string;
   onSave: (value: string) => void;
   onClear: () => void;
+  onToggleHave: () => void;
+  onSaveScore: (value: string | null) => void;
 }) {
   const [draft, setDraft] = useState(date ?? "");
   const [error, setError] = useState<string | null>(null);
+  const [draftScore, setDraftScore] = useState(score ?? "");
+  const [scoreError, setScoreError] = useState<string | null>(null);
 
   useEffect(() => {
     setDraft(date ?? "");
+    setDraftScore(score ?? "");
     setError(null);
-  }, [date]);
+    setScoreError(null);
+  }, [date, score]);
 
   const status = documentStatus(rule, date, today);
-  const dirty = draft !== (date ?? "");
-  const canSave = dirty && draft.length > 0;
+  const dirty = draft !== (date ?? "") || draftScore !== (score ?? "");
+  const haveLabel = rule.haveLabel ?? "I have this";
 
   function handleSave() {
+    if (!draft) {
+      setError("Add the test date too, in YYYY-MM-DD form.");
+      return;
+    }
     if (!isValidDateInput(draft)) {
       setError("Enter a real date in YYYY-MM-DD form, like 2026-04-30.");
       return;
     }
+    const trimmedScore = draftScore.trim();
+    if (trimmedScore && !isValidBandScore(trimmedScore)) {
+      setScoreError("Use a band from 1 to 9, like 7.5.");
+      return;
+    }
     setError(null);
+    setScoreError(null);
     onSave(draft);
+    onSaveScore(trimmedScore || null);
   }
 
   return (
@@ -116,9 +141,13 @@ export function DocumentDateCard({
             accessibilityRole="link"
             accessibilityLabel={`Open the canada.ca source for ${rule.title}`}
             onPress={() => openExternal(rule.sourceUrl)}
-            className="min-h-[36px] flex-row items-center gap-1.5 active:opacity-70"
+            className="min-h-[36px] min-w-0 flex-shrink flex-row items-center gap-1.5 active:opacity-70"
           >
-            <Text variant="small" tone="accent" className="font-inter-medium">
+            <Text
+              variant="small"
+              tone="accent"
+              className="flex-shrink font-inter-medium"
+            >
               {rule.sourceName}
             </Text>
             <Ionicons name="open-outline" size={13} color={colors.accent} />
@@ -129,24 +158,44 @@ export function DocumentDateCard({
         </View>
       </View>
 
+      {rule.note ? (
+        <View className="mt-3 rounded-control bg-warning-surface px-3.5 py-2.5">
+          <Text variant="small" style={{ color: colors.warning }}>
+            {rule.note}
+          </Text>
+        </View>
+      ) : null}
+
       <View className="mt-4">
         <DateField rule={rule} value={draft} onChange={setDraft} error={error} />
       </View>
 
+      {rule.score ? (
+        <View className="mt-4">
+          <TextField
+            label={rule.score.label}
+            helper={rule.score.helper}
+            error={scoreError}
+            value={draftScore}
+            onChangeText={setDraftScore}
+            placeholder="Enter band"
+            inputMode="decimal"
+            maxLength={3}
+            autoCorrect={false}
+            accessibilityLabel={`${rule.title} — ${rule.score.label}`}
+          />
+        </View>
+      ) : null}
+
       {date || dirty ? (
         <View className="mt-3 flex-row items-center justify-between gap-3">
           {dirty ? (
-            <Button
-              className="flex-1"
-              label="Save date"
-              disabled={!canSave}
-              onPress={handleSave}
-            />
+            <Button className="flex-1" label="Save" onPress={handleSave} />
           ) : date ? (
             <View className="flex-row items-center gap-1.5">
               <Ionicons name="checkmark-circle" size={16} color={colors.success} />
               <Text variant="small" tone="muted">
-                Date saved
+                Saved
               </Text>
             </View>
           ) : (
@@ -166,6 +215,32 @@ export function DocumentDateCard({
           ) : null}
         </View>
       ) : null}
+
+      <Pressable
+        accessibilityRole="checkbox"
+        accessibilityState={{ checked: has }}
+        aria-checked={has}
+        accessibilityLabel={`${haveLabel} — ${rule.title}`}
+        onPress={onToggleHave}
+        className="mt-4 min-h-[44px] flex-row items-center gap-2.5 self-start active:opacity-70"
+      >
+        <View
+          className={`h-5 w-5 items-center justify-center rounded-[5px] border ${
+            has ? "border-success bg-success" : "border-line bg-canvas"
+          }`}
+        >
+          {has ? (
+            <Ionicons name="checkmark" size={14} color={colors.canvas} />
+          ) : null}
+        </View>
+        <Text
+          variant="small"
+          tone={has ? "ink" : "muted"}
+          className="font-inter-medium"
+        >
+          {haveLabel}
+        </Text>
+      </Pressable>
     </Card>
   );
 }
