@@ -132,7 +132,7 @@ The calculator implements IRCC's published CRS grid for the rules in force **fro
 ```
 src/
   app/
-    _layout.tsx            Providers: auth, CRS, fonts, splash
+    _layout.tsx            Providers: auth, CRS, guide, PWA, fonts, splash
     login.tsx              Sign in / sign up, Google, preview mode
     crs.tsx                CRS questionnaire or saved result
     privacy.tsx            Public privacy policy
@@ -158,6 +158,8 @@ src/
     crs/crs-provider.tsx   Load/save scores; Supabase + device fallback
     crs/crs-form.tsx       Questionnaire
     crs/crs-result.tsx     Score result and breakdown
+    pwa/pwa-provider.tsx   Install prompt, offline status, service worker
+    pwa/install-card.tsx   Install card on Home and Settings
   lib/
     supabase.ts            Client, config check, auth options
     device-storage.ts      Web localStorage fallback
@@ -165,6 +167,7 @@ src/
   theme/tokens.json        Colours, radius, spacing
 supabase/migrations/       SQL to paste into the Supabase SQL editor
 assets/images/             App icon, adaptive icon, splash, favicon
+public/                    PWA manifest, service worker, install icons, guide screenshots
 ```
 
 Design tokens live in `src/theme/tokens.json` and feed both `tailwind.config.js` and TypeScript. Change a colour once and both pick it up.
@@ -183,6 +186,16 @@ The output goes to `dist/`. Expo web is a single-page app, so a static host must
   to = "/index.html"
   status = 200
 ```
+
+## Install and offline reading
+
+The web build is an installable app. `public/manifest.webmanifest` sets the home-screen name, icons and shortcuts, and launches the guide, so an installed app opens at the step saved for the account. `public/sw.js` caches the app shell, hashed JS/CSS/fonts and guide screenshots.
+
+- The service worker registers only in production builds (`npx expo export`), not in `npm run web`.
+- Step text ships inside the cached JS bundle. Screenshots are saved when their section is opened and served cache-first.
+- Offline navigation falls back to the cached app shell; a guide opened offline resumes at the last saved step.
+- Bump `VERSION` in `public/sw.js` when the shell or a screenshot at an existing path changes, so devices fetch the new copy.
+- The install card appears on Home (phones) and in Settings, and disappears once the app is installed. iPhone and iPad instructions point to Safari's Add to Home Screen.
 
 ## Troubleshooting
 

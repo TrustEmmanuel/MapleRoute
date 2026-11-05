@@ -29,7 +29,7 @@ import { ProgressRing } from "@/features/guide/progress-ring";
 import { ReadinessCard } from "@/features/guide/readiness-card";
 import { computeReadiness } from "@/features/guide/readiness";
 import { searchGuideSteps, type GuideSearchResult } from "@/features/guide/search";
-import { GuideSectionList } from "@/features/guide/section-list";
+import { prefetchGuideImages } from "@/features/pwa/pwa-provider";import { GuideSectionList } from "@/features/guide/section-list";
 import { StepCard } from "@/features/guide/step-card";
 import {
   checkedCount,
@@ -129,6 +129,15 @@ export default function ExpressEntryProfileScreen() {
     active?.section ??
     guide.sections.find((section) => section.id === activeSectionId) ??
     null;
+
+  useEffect(() => {
+    if (!sectionForActive) return;
+    prefetchGuideImages(
+      sectionForActive.steps.flatMap((step) =>
+        step.screenshots.map((screenshot) => screenshot.storagePath),
+      ),
+    );
+  }, [sectionForActive]);
 
   const isPrepSection = Boolean(
     prepSection && sectionForActive?.id === prepSection.id,

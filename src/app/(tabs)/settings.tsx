@@ -2,7 +2,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import Constants from "expo-constants";
 import { router, type Href } from "expo-router";
 import { useState } from "react";
-import { Pressable, Switch, View } from "react-native";
+import { Pressable, Platform, Switch, View } from "react-native";
 
 import { BrandLockup, MapleLeaf } from "@/components/brand";
 import { Disclaimer } from "@/components/disclaimer";
@@ -17,6 +17,7 @@ import { useAuth } from "@/features/auth/auth-provider";
 import { useCrs } from "@/features/crs/crs-provider";
 import { CRS_MAX } from "@/features/crs/rules";
 import { useGuide } from "@/features/guide/guide-provider";
+import { InstallCard } from "@/features/pwa/install-card";
 import { getSupabaseHost } from "@/lib/supabase";
 import { colors } from "@/theme/theme";
 
@@ -210,6 +211,15 @@ export default function SettingsScreen() {
               />
             ) : null}
           </Card>
+        </View>
+      ) : null}
+
+      {Platform.OS === "web" ? (
+        <View className="mt-8">
+          <Text variant="label" tone="muted">
+            On your phone
+          </Text>
+          <InstallCard />
         </View>
       ) : null}
 

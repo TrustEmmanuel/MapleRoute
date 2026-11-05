@@ -23,6 +23,7 @@ import {
   todayIso,
 } from "@/features/planning/documents";
 import { useDocumentDates } from "@/features/planning/use-document-dates";
+import { InstallCard } from "@/features/pwa/install-card";
 import { downloadCheckInIcs, formatCheckInDate } from "@/features/retention/check-in";
 import { useCheckInReminder } from "@/features/retention/use-check-in-reminder";
 import {
@@ -609,6 +610,7 @@ export default function HomeScreen() {
           </View>
 
           {isWideWeb ? null : <View className="mt-6">{scoreCard}</View>}
+          {isWideWeb ? null : <InstallCard hideWhenInstalled />}
 
           <Card className="mt-6 p-6">
             <Text variant="heading">Your journey</Text>

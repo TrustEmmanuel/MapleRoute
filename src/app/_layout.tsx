@@ -18,6 +18,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { AuthProvider } from "@/features/auth/auth-provider";
 import { CrsProvider } from "@/features/crs/crs-provider";
 import { GuideProvider } from "@/features/guide/guide-provider";
+import { PwaProvider } from "@/features/pwa/pwa-provider";
 import { colors } from "@/theme/theme";
 
 void SplashScreen.preventAutoHideAsync().catch(() => {});
@@ -47,38 +48,40 @@ export default function RootLayout() {
 
   return (
     <SafeAreaProvider>
-      <AuthProvider>
-        <CrsProvider>
-          <GuideProvider>
-            <StatusBar style="dark" />
-            <Stack
-              screenOptions={{
-                headerShown: false,
-                contentStyle: { backgroundColor: colors.canvas },
-              }}
-            >
-              <Stack.Screen name="(tabs)" />
-              <Stack.Screen name="login" options={{ animation: "fade" }} />
-              <Stack.Screen
-                name="crs"
-                options={{ animation: "slide_from_right" }}
-              />
-              <Stack.Screen
-                name="privacy"
-                options={{ animation: "slide_from_right" }}
-              />
-              <Stack.Screen
-                name="terms"
-                options={{ animation: "slide_from_right" }}
-              />
-              <Stack.Screen
-                name="accessibility"
-                options={{ animation: "slide_from_right" }}
-              />
-            </Stack>
-          </GuideProvider>
-        </CrsProvider>
-      </AuthProvider>
+      <PwaProvider>
+        <AuthProvider>
+          <CrsProvider>
+            <GuideProvider>
+              <StatusBar style="dark" />
+              <Stack
+                screenOptions={{
+                  headerShown: false,
+                  contentStyle: { backgroundColor: colors.canvas },
+                }}
+              >
+                <Stack.Screen name="(tabs)" />
+                <Stack.Screen name="login" options={{ animation: "fade" }} />
+                <Stack.Screen
+                  name="crs"
+                  options={{ animation: "slide_from_right" }}
+                />
+                <Stack.Screen
+                  name="privacy"
+                  options={{ animation: "slide_from_right" }}
+                />
+                <Stack.Screen
+                  name="terms"
+                  options={{ animation: "slide_from_right" }}
+                />
+                <Stack.Screen
+                  name="accessibility"
+                  options={{ animation: "slide_from_right" }}
+                />
+              </Stack>
+            </GuideProvider>
+          </CrsProvider>
+        </AuthProvider>
+      </PwaProvider>
     </SafeAreaProvider>
   );
 }
