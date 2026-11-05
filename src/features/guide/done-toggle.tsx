@@ -45,12 +45,12 @@ export function DoneToggle({
         onChange(!checked);
       }}
       className={`min-h-[56px] flex-row items-center gap-3.5 rounded-card border px-4 py-3.5 active:opacity-90 ${
-        checked ? "border-accent bg-[#FBECEA]" : "border-line bg-canvas"
+        checked ? "border-accent bg-danger-surface" : "border-control-line bg-canvas"
       }`}
     >
       <View
         className={`h-7 w-7 items-center justify-center rounded-full border-2 ${
-          checked ? "border-accent bg-accent" : "border-line bg-canvas"
+          checked ? "border-accent bg-accent" : "border-control-line bg-canvas"
         }`}
       >
         <Animated.View
@@ -90,7 +90,7 @@ export function ReadyToggle({
     >
       <View
         className={`h-5 w-5 items-center justify-center rounded-[6px] border ${
-          checked ? "border-accent bg-accent" : "border-line bg-canvas"
+          checked ? "border-accent bg-accent" : "border-control-line bg-canvas"
         }`}
       >
         {checked ? (

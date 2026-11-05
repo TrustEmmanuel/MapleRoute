@@ -83,7 +83,7 @@ export function SelectField<T extends string>({
           hapticLight();
           setOpen(true);
         }}
-        className="mt-2 h-[52px] flex-row items-center justify-between rounded-control border border-line bg-canvas px-4 active:bg-surface"
+        className="mt-2 h-[52px] flex-row items-center justify-between rounded-control border border-control-line bg-canvas px-4 active:bg-surface"
       >
         <Text variant="body" className="flex-1 pr-3" numberOfLines={1}>
           {selected?.label ?? "Select an option"}

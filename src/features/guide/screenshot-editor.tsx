@@ -577,8 +577,8 @@ export function ScreenshotEditor({
                         onPress={() => setMode(tool.value)}
                         className={`min-h-[42px] flex-row items-center gap-2 rounded-control border px-3 ${
                           selected
-                            ? "border-accent bg-[#FBECEA]"
-                            : "border-line bg-canvas"
+                            ? "border-accent bg-danger-surface"
+                            : "border-control-line bg-canvas"
                         }`}
                       >
                         <Ionicons

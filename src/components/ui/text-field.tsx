@@ -44,7 +44,7 @@ export function TextField({
       )}
       <View
         className={`mt-2 h-[52px] flex-row items-center rounded-control border bg-canvas px-4 ${
-          error ? "border-accent" : focused ? "border-ink" : "border-line"
+          error ? "border-accent" : focused ? "border-ink" : "border-control-line"
         }`}
       >
         <TextInput

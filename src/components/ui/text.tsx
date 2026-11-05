@@ -43,10 +43,24 @@ export function Text({
   variant = "body",
   tone = "ink",
   className = "",
+  accessibilityRole,
   ...props
 }: AppTextProps) {
+  const heading =
+    variant === "display" || variant === "title"
+      ? 1
+      : variant === "heading"
+        ? 2
+        : undefined;
+  const role = accessibilityRole ?? (heading ? "header" : undefined);
+  const level = heading
+    ? ({ "aria-level": heading } as Record<string, number>)
+    : undefined;
+
   return (
     <RNText
+      accessibilityRole={role}
+      {...level}
       className={`${variantClasses[variant]} ${toneClasses[tone]} ${className}`}
       {...props}
     />

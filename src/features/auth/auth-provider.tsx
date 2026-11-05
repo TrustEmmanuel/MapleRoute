@@ -10,6 +10,7 @@ import {
   type ReactNode,
 } from "react";
 
+import { clearAccountData } from "@/features/account/clear-account-data";
 import { isSupabaseConfigured, supabase } from "@/lib/supabase";
 import {
   readLocalValue,
@@ -47,6 +48,7 @@ type AuthContextValue = {
   ) => Promise<{ needsConfirmation: boolean }>;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
+  deleteAccount: () => Promise<void>;
   enterPreview: () => void;
   exitPreview: () => void;
 };
@@ -169,6 +171,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (error) throw error;
   }, []);
 
+  const deleteAccount = useCallback(async () => {
+    if (session && supabase) {
+      const { error } = await supabase.rpc("delete_own_account");
+      if (error) {
+        throw new Error(
+          "We couldn't delete the hosted account, so nothing was removed. Try again, or use the contact link in the Privacy policy.",
+        );
+      }
+    }
+
+    const key =
+      session?.user.id ??
+      (localAccount ? `local:${localAccount.email.toLowerCase()}` : null);
+    clearAccountData(key);
+
+    setPreviewMode(false);
+    setLocalAccount(null);
+    removeLocalValue(LOCAL_ACCOUNT_KEY);
+    removeSessionValue(LOCAL_ACCOUNT_KEY);
+    setSession(null);
+
+    if (session && supabase) {
+      try {
+        await supabase.auth.signOut();
+      } catch {
+        // The hosted account is already gone.
+      }
+    }
+  }, [session, localAccount]);
+
   const enterPreview = useCallback(() => setPreviewMode(true), []);
   const exitPreview = useCallback(() => setPreviewMode(false), []);
 
@@ -194,6 +226,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signUp,
       signInWithGoogle,
       signOut,
+      deleteAccount,
       enterPreview,
       exitPreview,
     };
@@ -206,6 +239,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signUp,
     signInWithGoogle,
     signOut,
+    deleteAccount,
     enterPreview,
     exitPreview,
   ]);

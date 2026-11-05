@@ -124,6 +124,7 @@ The calculator implements IRCC's published CRS grid for the rules in force **unt
 | `npm run web` | Start the web version in a browser |
 | `npm run android` / `npm run ios` | Open on an emulator/simulator |
 | `npm run typecheck` | TypeScript check with no output files |
+| `npm run a11y:contrast` | Check design tokens against WCAG AA contrast ratios |
 
 ## Project structure
 
@@ -133,6 +134,9 @@ src/
     _layout.tsx            Providers: auth, CRS, fonts, splash
     login.tsx              Sign in / sign up, Google, preview mode
     crs.tsx                CRS questionnaire or saved result
+    privacy.tsx            Public privacy policy
+    terms.tsx              Public terms of use
+    accessibility.tsx      Public accessibility statement
     (tabs)/
       _layout.tsx          Auth guard, tabs, desktop web header
       index.tsx            Home: score badge, next action, journey
@@ -145,7 +149,8 @@ src/
     screen.tsx             Shared page frame
     ui/                    Text, Button, Card, fields, SelectField, ChoiceGroup
   features/
-    auth/auth-provider.tsx Session, sign in/up/out, preview mode
+    account/clear-account-data.ts  Per-account storage cleanup for deletion
+    auth/auth-provider.tsx Session, sign in/up/out, delete, preview mode
     crs/rules.ts           Official CRS grid, benchmark, bands, metadata
     crs/calculate.ts       Pure scoring engine (tested)
     crs/crs-provider.tsx   Load/save scores; Supabase + device fallback
@@ -187,8 +192,12 @@ The output goes to `dist/`. Expo web is a single-page app, so a static host must
 
 ## Data and privacy boundaries
 
-MapleRoute never asks for your IRCC password, UCI, or passport number. Phase 1 stores only your email (through Supabase Auth), your CRS answers, and your score. Every user table has Row Level Security, so an account can only read and write its own rows.
+MapleRoute never asks for your IRCC password, UCI, or passport number. In the local build, the account email, CRS answers, guide progress, document dates and band scores are stored in the browser on the device. When Supabase is connected, the email and CRS snapshots are stored in your Supabase project with Row Level Security; guide and planner data stay local.
 
-In-app account deletion is required before app-store submission and will be added in a later phase.
+Settings → **Delete my account and data** clears every per-account key on the device and signs out. For hosted accounts it also deletes the auth user through `supabase/migrations/20261105_delete_own_account.sql`; run that after the Phase 1 SQL. The profiles and CRS snapshot rows are removed by the existing `on delete cascade` rules.
+
+The privacy policy, terms and accessibility statement are public routes: `/privacy`, `/terms` and `/accessibility`.
+
+`npm run a11y:contrast` checks the colour tokens against WCAG AA. Keyboard focus is visible, while mouse clicks do not leave a focus ring.
 
 Immigration requirements, fees, and steps are stored as data with a `source_url` (canada.ca / IRCC), a `last_verified` date, and a version — not hardcoded in screens.

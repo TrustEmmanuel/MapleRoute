@@ -45,7 +45,7 @@ function NextStepCard() {
       className="flex-row items-center gap-4 rounded-card bg-canvas px-5 py-4"
       style={cardShadow}
     >
-      <View className="h-11 w-11 items-center justify-center rounded-[12px] bg-[#FBECEA]">
+      <View className="h-11 w-11 items-center justify-center rounded-[12px] bg-danger-surface">
         <Ionicons name="school-outline" size={20} color={colors.accent} />
       </View>
       <View className="flex-1">

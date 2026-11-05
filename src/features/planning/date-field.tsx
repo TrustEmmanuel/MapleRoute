@@ -43,7 +43,7 @@ export function DateField({ rule, value, onChange, error }: DateFieldProps) {
       </Text>
       <View
         className={`mt-2 h-[52px] flex-row items-center rounded-control border bg-canvas px-2 ${
-          error ? "border-accent" : focused ? "border-ink" : "border-line"
+          error ? "border-accent" : focused ? "border-ink" : "border-control-line"
         }`}
       >
         <input

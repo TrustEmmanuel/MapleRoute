@@ -63,6 +63,18 @@ export default function RootLayout() {
                 name="crs"
                 options={{ animation: "slide_from_right" }}
               />
+              <Stack.Screen
+                name="privacy"
+                options={{ animation: "slide_from_right" }}
+              />
+              <Stack.Screen
+                name="terms"
+                options={{ animation: "slide_from_right" }}
+              />
+              <Stack.Screen
+                name="accessibility"
+                options={{ animation: "slide_from_right" }}
+              />
             </Stack>
           </GuideProvider>
         </CrsProvider>

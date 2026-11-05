@@ -45,7 +45,7 @@ export function ChoiceGroup<T extends string>({
               className={`min-h-[44px] justify-center rounded-full border px-4 py-2 ${
                 active
                   ? "border-ink bg-ink"
-                  : "border-line bg-canvas active:bg-surface"
+                  : "border-control-line bg-canvas active:bg-surface"
               }`}
             >
               <Text

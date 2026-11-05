@@ -11,6 +11,7 @@ module.exports = {
         canvas: tokens.colors.canvas,
         surface: tokens.colors.surface,
         line: tokens.colors.line,
+        "control-line": tokens.colors.controlLine,
         ink: tokens.colors.ink,
         muted: tokens.colors.muted,
         accent: {

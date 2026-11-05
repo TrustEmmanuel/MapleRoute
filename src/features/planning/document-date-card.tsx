@@ -226,7 +226,7 @@ export function DocumentDateCard({
       >
         <View
           className={`h-5 w-5 items-center justify-center rounded-[5px] border ${
-            has ? "border-success bg-success" : "border-line bg-canvas"
+            has ? "border-success bg-success" : "border-control-line bg-canvas"
           }`}
         >
           {has ? (

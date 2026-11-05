@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Platform, TextInput, View } from "react-native";
 
 import { colors } from "@/theme/theme";
@@ -21,6 +22,8 @@ export function TextArea({
   minHeight?: number;
   editable?: boolean;
 }) {
+  const [focused, setFocused] = useState(false);
+
   return (
     <View>
       <Text className="text-[14px] font-inter-medium text-ink">{label}</Text>
@@ -31,7 +34,11 @@ export function TextArea({
         onChangeText={onChangeText}
         placeholder={placeholder}
         placeholderTextColor={colors.muted}
-        className="mt-2 rounded-control border border-line bg-canvas px-4 py-3 font-inter text-[15px] text-ink"
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
+        className={`mt-2 rounded-control border bg-canvas px-4 py-3 font-inter text-[15px] text-ink ${
+          focused ? "border-ink" : "border-control-line"
+        }`}
         style={{
           minHeight,
           textAlignVertical: "top",

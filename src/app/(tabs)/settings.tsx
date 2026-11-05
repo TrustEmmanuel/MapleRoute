@@ -1,10 +1,12 @@
+import Ionicons from "@expo/vector-icons/Ionicons";
 import Constants from "expo-constants";
-import { router } from "expo-router";
+import { router, type Href } from "expo-router";
 import { useState } from "react";
-import { Switch, View } from "react-native";
+import { Pressable, Switch, View } from "react-native";
 
 import { BrandLockup, MapleLeaf } from "@/components/brand";
 import { Disclaimer } from "@/components/disclaimer";
+import { InfoDialog } from "@/components/info-dialog";
 import { Screen } from "@/components/screen";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -24,6 +26,7 @@ export default function SettingsScreen() {
     isLocalAccount,
     configured,
     signOut,
+    deleteAccount,
     exitPreview,
   } = useAuth();
   const { latest } = useCrs();
@@ -31,6 +34,9 @@ export default function SettingsScreen() {
   const isWideWeb = useIsWideWeb();
   const [signingOut, setSigningOut] = useState(false);
   const [signOutError, setSignOutError] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const version = Constants.expoConfig?.version ?? "0.1.0";
   const hostedProject = getSupabaseHost();
 
@@ -51,6 +57,30 @@ export default function SettingsScreen() {
     } finally {
       setSigningOut(false);
     }
+  }
+
+  async function handleDeleteAccount() {
+    setDeleting(true);
+    setDeleteError(null);
+    try {
+      await deleteAccount();
+      setConfirmDelete(false);
+      router.replace("/login");
+    } catch (error) {
+      setDeleteError(
+        error instanceof Error
+          ? error.message
+          : "Could not delete your data. Try again.",
+      );
+    } finally {
+      setDeleting(false);
+    }
+  }
+
+  function closeDeleteDialog() {
+    if (deleting) return;
+    setConfirmDelete(false);
+    setDeleteError(null);
   }
 
   return (
@@ -123,6 +153,30 @@ export default function SettingsScreen() {
         ) : null}
       </View>
 
+      {!previewMode ? (
+        <View className="mt-8">
+          <Text variant="label" tone="muted">
+            Your data
+          </Text>
+          <Card className="mt-3 p-5">
+            <Text variant="small" tone="muted">
+              Your CRS answers, guide progress and document dates are stored for
+              this account. Deleting removes them from this device and signs you
+              out. This cannot be undone.
+            </Text>
+            <Button
+              className="mt-4"
+              variant="danger"
+              label="Delete my account and data"
+              onPress={() => {
+                setDeleteError(null);
+                setConfirmDelete(true);
+              }}
+            />
+          </Card>
+        </View>
+      ) : null}
+
       {!configured ? (
         <View className="mt-8">
           <Text variant="label" tone="muted">
@@ -142,7 +196,7 @@ export default function SettingsScreen() {
                 accessibilityLabel="Guide author mode"
                 value={authorMode}
                 onValueChange={setAuthorMode}
-                trackColor={{ false: colors.line, true: colors.accent }}
+                trackColor={{ false: colors.controlLine, true: colors.accent }}
                 thumbColor={colors.canvas}
               />
             </View>
@@ -191,23 +245,78 @@ export default function SettingsScreen() {
 
       <View className="mt-8">
         <Text variant="label" tone="muted">
-          Privacy & accounts
+          Legal & accessibility
         </Text>
-        <Card className="mt-3 p-5">
-          <Text variant="small" tone="muted">
-            MapleRoute never asks for your IRCC password, UCI or passport
-            number. Your CRS answers and score are stored with your account so
-            you can pick up where you left off. In-app account deletion will be
-            added before the app is submitted to the app stores.
-          </Text>
+        <Card className="mt-3 px-4">
+          <SettingLink href="/privacy" label="Privacy policy" />
+          <Divider />
+          <SettingLink href="/terms" label="Terms of use" />
+          <Divider />
+          <SettingLink href="/accessibility" label="Accessibility statement" />
         </Card>
+        <Text variant="small" tone="muted" className="mt-3">
+          MapleRoute never asks for your IRCC password, UCI or passport number.
+          This build keeps your account and app data on this device.
+        </Text>
       </View>
 
       <Text variant="small" tone="muted" className="mt-10 text-center">
         © {new Date().getFullYear()} MapleRoute
       </Text>
 
+      <InfoDialog
+        visible={confirmDelete}
+        title="Delete my account?"
+        onClose={closeDeleteDialog}
+      >
+        <Text variant="body">
+          This removes your email and everything MapleRoute saved for this
+          account on this device: CRS answers and score, guide progress,
+          document dates, band score and reminder. It signs you out and cannot
+          be undone.
+        </Text>
+        {!isLocalAccount ? (
+          <Text variant="body" className="mt-3">
+            Your hosted account and saved CRS checks are deleted too.
+          </Text>
+        ) : null}
+        {deleteError ? (
+          <Text variant="small" className="mt-3 text-accent">
+            {deleteError}
+          </Text>
+        ) : null}
+        <View className="mt-5 gap-3">
+          <Button
+            variant="danger"
+            label="Delete everything"
+            loading={deleting}
+            loadingLabel="Deleting…"
+            onPress={() => void handleDeleteAccount()}
+          />
+          <Button
+            variant="secondary"
+            label="Keep my account"
+            disabled={deleting}
+            onPress={closeDeleteDialog}
+          />
+        </View>
+      </InfoDialog>
+
       <Disclaimer className="mt-6" />
     </Screen>
+  );
+}
+
+function SettingLink({ href, label }: { href: Href; label: string }) {
+  return (
+    <Pressable
+      accessibilityRole="link"
+      accessibilityLabel={label}
+      onPress={() => router.push(href)}
+      className="min-h-[48px] flex-row items-center justify-between gap-3 py-3 active:opacity-70"
+    >
+      <Text variant="body">{label}</Text>
+      <Ionicons name="chevron-forward" size={16} color={colors.muted} />
+    </Pressable>
   );
 }

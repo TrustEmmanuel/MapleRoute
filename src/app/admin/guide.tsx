@@ -341,8 +341,8 @@ function StepEditor({
                   }}
                   className={`min-h-[46px] flex-1 justify-center rounded-control border px-3 ${
                     selected
-                      ? "border-accent bg-[#FBECEA]"
-                      : "border-line bg-canvas"
+                      ? "border-accent bg-danger-surface"
+                      : "border-control-line bg-canvas"
                   }`}
                 >
                   <Text

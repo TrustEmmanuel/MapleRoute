@@ -180,7 +180,7 @@ export default function LoginScreen() {
           >
             <View
               className={`h-[18px] w-[18px] items-center justify-center rounded-[5px] border ${
-                remember ? "border-accent bg-accent" : "border-line bg-canvas"
+                remember ? "border-accent bg-accent" : "border-control-line bg-canvas"
               }`}
             >
               {remember ? (
@@ -265,6 +265,35 @@ export default function LoginScreen() {
           >
             {creating ? "Sign in" : "Create an account"}
           </Text>
+        </View>
+
+        <View className="mt-6 flex-row flex-wrap items-center justify-center gap-x-3 gap-y-1">
+          <Text variant="small" tone="muted">
+            By continuing, you agree to the
+          </Text>
+          <Pressable
+            accessibilityRole="link"
+            accessibilityLabel="Terms of use"
+            onPress={() => router.push("/terms")}
+            className="min-h-[36px] justify-center active:opacity-70"
+          >
+            <Text variant="small" tone="accent" className="font-inter-medium">
+              Terms of use
+            </Text>
+          </Pressable>
+          <Text variant="small" tone="muted">
+            and
+          </Text>
+          <Pressable
+            accessibilityRole="link"
+            accessibilityLabel="Privacy policy"
+            onPress={() => router.push("/privacy")}
+            className="min-h-[36px] justify-center active:opacity-70"
+          >
+            <Text variant="small" tone="accent" className="font-inter-medium">
+              Privacy policy
+            </Text>
+          </Pressable>
         </View>
 
         {!configured ? (
