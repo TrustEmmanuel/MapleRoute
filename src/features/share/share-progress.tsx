@@ -5,6 +5,7 @@ import { Platform, Pressable, View } from "react-native";
 import { InfoDialog } from "@/components/info-dialog";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
+import { trackEvent } from "@/features/telemetry";
 import { openExternal } from "@/lib/links";
 import { colors } from "@/theme/theme";
 
@@ -36,6 +37,7 @@ export function ShareProgressButton({
   const url = shareUrl(plan);
 
   async function handlePress() {
+    trackEvent("share_clicked", { source: "home" });
     if (typeof navigator !== "undefined" && navigator.share) {
       try {
         await navigator.share({
@@ -55,6 +57,7 @@ export function ShareProgressButton({
     if (typeof navigator === "undefined" || !navigator.clipboard) return;
     try {
       await navigator.clipboard.writeText(url);
+      trackEvent("share_copied", { source: "home" });
       setCopied(true);
     } catch {
       setCopied(false);
@@ -96,6 +99,7 @@ export function ShareProgressButton({
           className="mt-5"
           label="Share on WhatsApp"
           onPress={() => {
+            trackEvent("share_whatsapp", { source: "home" });
             setOpen(false);
             openExternal(whatsappUrl(message));
           }}

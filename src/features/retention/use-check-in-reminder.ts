@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 
 import { useAuth } from "@/features/auth/auth-provider";
+import { trackEvent } from "@/features/telemetry";
 import { readLocalValue, removeLocalValue, writeLocalValue } from "@/lib/device-storage";
 
 import { addDaysIso, todayIso } from "./check-in";
@@ -26,6 +27,7 @@ export function useCheckInReminder() {
   const setInDays = useCallback(
     (days: number) => {
       const next = addDaysIso(days);
+      trackEvent("checkin_set");
       writeLocalValue(storageKey, next);
       setDueDate(next);
       return next;

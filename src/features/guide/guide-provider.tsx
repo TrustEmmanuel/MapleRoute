@@ -9,6 +9,7 @@ import {
 } from "react";
 
 import { useAuth } from "@/features/auth/auth-provider";
+import { trackEvent } from "@/features/telemetry";
 import { readLocalValue, writeLocalValue } from "@/lib/device-storage";
 import { supabase, supabaseUrl } from "@/lib/supabase";
 
@@ -524,6 +525,7 @@ export function GuideProvider({ children }: { children: ReactNode }) {
 
   const toggleStep = useCallback(
     (stepId: string, checked: boolean) => {
+      trackEvent(checked ? "guide_step_done" : "guide_step_undone");
       const entry: StepProgress = {
         checked,
         checkedAt: checked ? new Date().toISOString() : null,

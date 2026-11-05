@@ -9,6 +9,7 @@ import { useCrs } from "@/features/crs/crs-provider";
 import { CrsResultView } from "@/features/crs/crs-result";
 import { defaultCrsInputs } from "@/features/crs/options";
 import type { CrsInputs } from "@/features/crs/rules";
+import { trackEvent } from "@/features/telemetry";
 
 export default function CrsScreen() {
   const {
@@ -38,6 +39,7 @@ export default function CrsScreen() {
 
   async function handleSubmit(inputs: CrsInputs, result: CrsResult) {
     const outcome = await save(result, inputs);
+    trackEvent("crs_completed");
     setSynced(outcome.synced);
     setEditing(false);
   }

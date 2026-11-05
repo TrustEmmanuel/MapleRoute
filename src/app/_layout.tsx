@@ -19,6 +19,8 @@ import { AuthProvider } from "@/features/auth/auth-provider";
 import { CrsProvider } from "@/features/crs/crs-provider";
 import { GuideProvider } from "@/features/guide/guide-provider";
 import { PwaProvider } from "@/features/pwa/pwa-provider";
+import { TelemetryErrorBoundary } from "@/features/telemetry/error-boundary";
+import { initTelemetry } from "@/features/telemetry";
 import { colors } from "@/theme/theme";
 
 void SplashScreen.preventAutoHideAsync().catch(() => {});
@@ -30,6 +32,10 @@ export default function RootLayout() {
     Inter_600SemiBold,
     Inter_700Bold,
   });
+
+  useEffect(() => {
+    initTelemetry();
+  }, []);
 
   useEffect(() => {
     if (Platform.OS === "web") return;
@@ -48,41 +54,43 @@ export default function RootLayout() {
 
   return (
     <SafeAreaProvider>
-      <PwaProvider>
-        <AuthProvider>
-          <CrsProvider>
-            <GuideProvider>
-              <StatusBar style="dark" />
-              <Stack
-                screenOptions={{
-                  headerShown: false,
-                  contentStyle: { backgroundColor: colors.canvas },
-                }}
-              >
-                <Stack.Screen name="(tabs)" />
-                <Stack.Screen name="login" options={{ animation: "fade" }} />
-                <Stack.Screen
-                  name="crs"
-                  options={{ animation: "slide_from_right" }}
-                />
-                <Stack.Screen
-                  name="privacy"
-                  options={{ animation: "slide_from_right" }}
-                />
-                <Stack.Screen
-                  name="terms"
-                  options={{ animation: "slide_from_right" }}
-                />
-                <Stack.Screen
-                  name="accessibility"
-                  options={{ animation: "slide_from_right" }}
-                />
-                <Stack.Screen name="share" options={{ animation: "fade" }} />
-              </Stack>
-            </GuideProvider>
-          </CrsProvider>
-        </AuthProvider>
-      </PwaProvider>
+      <TelemetryErrorBoundary>
+        <PwaProvider>
+          <AuthProvider>
+            <CrsProvider>
+              <GuideProvider>
+                <StatusBar style="dark" />
+                <Stack
+                  screenOptions={{
+                    headerShown: false,
+                    contentStyle: { backgroundColor: colors.canvas },
+                  }}
+                >
+                  <Stack.Screen name="(tabs)" />
+                  <Stack.Screen name="login" options={{ animation: "fade" }} />
+                  <Stack.Screen
+                    name="crs"
+                    options={{ animation: "slide_from_right" }}
+                  />
+                  <Stack.Screen
+                    name="privacy"
+                    options={{ animation: "slide_from_right" }}
+                  />
+                  <Stack.Screen
+                    name="terms"
+                    options={{ animation: "slide_from_right" }}
+                  />
+                  <Stack.Screen
+                    name="accessibility"
+                    options={{ animation: "slide_from_right" }}
+                  />
+                  <Stack.Screen name="share" options={{ animation: "fade" }} />
+                </Stack>
+              </GuideProvider>
+            </CrsProvider>
+          </AuthProvider>
+        </PwaProvider>
+      </TelemetryErrorBoundary>
     </SafeAreaProvider>
   );
 }

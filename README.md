@@ -163,6 +163,10 @@ src/
     pwa/install-card.tsx   Install card on Home and Settings
     share/share-link.ts    Share text, URL and WhatsApp helpers
     share/share-progress.tsx  Share button and fallback dialog
+    telemetry/analytics.ts Cookieless Umami loader and funnel events
+    telemetry/errors.ts    Sentry init, capture and PII scrubbing
+    telemetry/error-boundary.tsx  Plain-language render error fallback
+    telemetry/config.ts    Env values; DNT and GPC gate
   lib/
     supabase.ts            Client, config check, auth options
     device-storage.ts      Web localStorage fallback
@@ -206,6 +210,22 @@ Once the guide has started or a CRS score is saved, the home score card offers *
 
 The link points to `/share?done=12&total=53&score=512`. That page is public: it does not read the account or require a login, and it renders only the two counts and the score from the query string. It never contains an email, a name or any answers. The page ends with a **Build my own plan** button that opens the guide.
 
+## Cookieless analytics and error monitoring
+
+Both services are optional. With no IDs in `.env`, no third-party script loads and no network request is made.
+
+1. **Umami Cloud** — create an account, add a website for the production URL, then copy its Website ID into `EXPO_PUBLIC_UMAMI_WEBSITE_ID`. The loader is `https://cloud.umami.is/script.js`. Self-hosted Umami can set `EXPO_PUBLIC_UMAMI_SCRIPT_URL` instead. `EXPO_PUBLIC_UMAMI_DOMAINS` optionally limits counting to named domains.
+2. **Sentry** — create a JavaScript/browser project and copy the public DSN into `EXPO_PUBLIC_SENTRY_DSN`. GlitchTip and other Sentry-compatible servers use the same variable. Never put a Sentry auth token in an `EXPO_PUBLIC_*` variable.
+3. Restart Expo after changing `.env`.
+
+What is sent:
+
+- **Page views** from Umami's SPA path tracking, with `data-exclude-search` and `data-exclude-hash`, so `/share?done=12&total=53&score=512` is counted as `/share` only.
+- **Funnel events**: `crs_completed`, `guide_step_done`, `guide_step_undone`, `share_clicked`, `share_whatsapp`, `share_copied`, `share_link_opened`, `checkin_set`. Event properties are limited to an allowlist (`route`, `source`, `steps_done`, `steps_total`); no scores, emails, notes or document dates.
+- **Error reports** with `sendDefaultPii: false`, query strings stripped, and emails plus long numbers redacted. Traces are disabled (`tracesSampleRate: 0`).
+
+Umami sets no cookies. Both services are skipped when the browser sends Do Not Track or Global Privacy Control. Telemetry runs only on web; the native app is unchanged. Use the Umami dashboard to build a funnel from `crs_completed` → `guide_step_done` → `share_clicked` → `share_link_opened`, and Sentry **Issues** filtered by the `environment` label.
+
 ## Troubleshooting
 
 - **Login shows "Connect Supabase to turn on accounts"**: `.env` is missing or the dev server started before it was saved. Fix the file, stop the server, and start it again.
@@ -213,10 +233,13 @@ The link points to `/share?done=12&total=53&score=512`. That page is public: it 
 - **A saved score is not in Supabase**: confirm the migration was run and that you are signed in, not in preview mode. The score is still cached on the device.
 - **Port 8081 is busy**: close the other Metro process, or use `npx expo start --web --port 8082`.
 - **Expo Go shows an incompatible SDK message**: update Expo Go — this project uses Expo SDK 58.
+- **No analytics or errors appear**: the relevant ID is blank, Expo was not restarted after editing `.env`, or the browser sends DNT/GPC. This is expected in Expo Go and native builds.
 
 ## Data and privacy boundaries
 
 MapleRoute never asks for your IRCC password, UCI, or passport number. In the local build, the account email, CRS answers, guide progress, document dates and band scores are stored in the browser on the device. When Supabase is connected, the email and CRS snapshots are stored in your Supabase project with Row Level Security; guide and planner data stay local.
+
+Analytics carry only page paths and allowlisted event names. Shared progress numbers are removed from page paths before they reach Umami, and error reports are scrubbed of query strings, emails and long numbers before they reach Sentry.
 
 Settings → **Delete my account and data** clears every per-account key on the device and signs out. For hosted accounts it also deletes the auth user through `supabase/migrations/20261105_delete_own_account.sql`; run that after the Phase 1 SQL. The profiles and CRS snapshot rows are removed by the existing `on delete cascade` rules.
 

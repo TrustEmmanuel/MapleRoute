@@ -17,6 +17,7 @@ import {
   shareUrl,
   whatsappUrl,
 } from "@/features/share/share-link";
+import { trackEvent } from "@/features/telemetry";
 import { openExternal } from "@/lib/links";
 import { colors } from "@/theme/theme";
 
@@ -41,6 +42,13 @@ export default function ShareScreen() {
         document.title = "MapleRoute";
       };
     }, [title]),
+  );
+
+  const hasPlan = Boolean(plan);
+  useFocusEffect(
+    useCallback(() => {
+      if (hasPlan) trackEvent("share_link_opened");
+    }, [hasPlan]),
   );
 
   async function copyLink(url: string) {
