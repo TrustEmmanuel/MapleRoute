@@ -43,7 +43,9 @@ export function GuideSectionList({
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={`${section.title}, ${
-                total > 0 ? `${done} of ${total} steps done` : "being verified"
+                total > 0
+                  ? `${done} of ${total} steps done in this section`
+                  : "being verified"
               }`}
               accessibilityState={{ selected: current }}
               onPress={() => onSelectSection(section.id)}
@@ -72,7 +74,9 @@ export function GuideSectionList({
                 </Text>
                 <Text variant="small" tone="muted" className="mt-0.5 text-[12px] leading-[16px]">
                   {total > 0
-                    ? `${done}/${total} · ${complete ? "Done" : `${total - done} left`}`
+                    ? complete
+                      ? `${done} of ${total} done`
+                      : `${done} of ${total} done · ${total - done} left`
                     : "Being verified"}
                 </Text>
               </View>

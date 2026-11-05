@@ -20,6 +20,7 @@ import { Text } from "@/components/ui/text";
 import { useIsWideWeb } from "@/components/web-nav";
 import { useCrs } from "@/features/crs/crs-provider";
 import { DoneToggle } from "@/features/guide/done-toggle";
+import { GuideSearchField, GuideSearchResults } from "@/features/guide/guide-search";
 import { GuideStatsStrip } from "@/features/guide/guide-stats";
 import { useGuide } from "@/features/guide/guide-provider";
 import { PrepInputsPanel, hasPrepInputs } from "@/features/guide/prep-inputs";
@@ -27,6 +28,7 @@ import { prepDoneCopy } from "@/features/guide/prep-done-copy";
 import { ProgressRing } from "@/features/guide/progress-ring";
 import { ReadinessCard } from "@/features/guide/readiness-card";
 import { computeReadiness } from "@/features/guide/readiness";
+import { searchGuideSteps, type GuideSearchResult } from "@/features/guide/search";
 import { GuideSectionList } from "@/features/guide/section-list";
 import { StepCard } from "@/features/guide/step-card";
 import {
@@ -89,6 +91,7 @@ export default function ExpressEntryProfileScreen() {
   const [collapsed, setCollapsed] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [dismissedSkipFor, setDismissedSkipFor] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
   const scrollRef = useRef<ScrollViewInstance | null>(null);
 
   const allVisible = useMemo(() => visibleSteps(guide, isAdmin), [guide, isAdmin]);
@@ -97,6 +100,11 @@ export default function ExpressEntryProfileScreen() {
     () => checkedCount(allVisible.map((item) => item.step), progress),
     [allVisible, progress],
   );
+  const searchResults = useMemo(
+    () => searchGuideSteps(guide, isAdmin, searchQuery),
+    [guide, isAdmin, searchQuery],
+  );
+  const searchActive = searchQuery.trim().length > 0;
 
   const prepSection =
     guide.sections.find((section) => section.position === 0) ?? null;
@@ -237,6 +245,16 @@ export default function ExpressEntryProfileScreen() {
     setActiveStepId(stepId);
     setSheetOpen(false);
     scrollTop();
+  }
+
+  function openSearchResult(result: GuideSearchResult) {
+    selectStep(result.section.id, result.step.id);
+    setSearchQuery("");
+  }
+
+  function submitSearch() {
+    const first = searchResults[0];
+    if (first) openSearchResult(first);
   }
 
   function goRelative(direction: -1 | 1) {
@@ -439,6 +457,7 @@ export default function ExpressEntryProfileScreen() {
           ref={scrollRef}
           className="flex-1"
           showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
           contentContainerStyle={{ flexGrow: 1, paddingBottom: 130 }}
         >
           <View className="px-5 pt-5">
@@ -453,6 +472,23 @@ export default function ExpressEntryProfileScreen() {
                 {guide.description}
               </Text>
             </View>
+
+            <GuideSearchField
+              className="mt-4"
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              onSubmit={submitSearch}
+            />
+            {searchActive ? (
+              <Card className="mt-3 px-1 py-1">
+                <GuideSearchResults
+                  query={searchQuery}
+                  results={searchResults}
+                  progress={progress}
+                  onSelect={openSearchResult}
+                />
+              </Card>
+            ) : null}
 
             <View className="mt-4 flex-row gap-3">
               <Pressable
@@ -662,12 +698,31 @@ export default function ExpressEntryProfileScreen() {
             </Pressable>
           </View>
 
+          {collapsed ? null : (
+            <View className="px-2 pb-3">
+              <GuideSearchField
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                onSubmit={submitSearch}
+              />
+            </View>
+          )}
+
           <ScrollView
             className="flex-1"
             contentContainerStyle={{ paddingHorizontal: 10, paddingBottom: 24 }}
             showsVerticalScrollIndicator={false}
           >
-            {collapsed ? (
+            {searchActive && !collapsed ? (
+              <View className="px-1">
+                <GuideSearchResults
+                  query={searchQuery}
+                  results={searchResults}
+                  progress={progress}
+                  onSelect={openSearchResult}
+                />
+              </View>
+            ) : collapsed ? (
               <View className="items-center gap-1">
                 {guide.sections.map((section) => {
                   const steps = stepsVisibleTo(section, isAdmin);

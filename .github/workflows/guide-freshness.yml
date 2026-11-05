@@ -1,0 +1,56 @@
+name: Guide freshness
+
+on:
+  schedule:
+    - cron: "0 7 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check-sources:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Check the official pages behind every step
+        id: check
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          npm run guide:sources 2>&1 | tee guide-check.log
+
+      - name: Keep the report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: guide-freshness
+          path: |
+            data/guide-freshness.md
+            guide-check.log
+
+      - name: Open or update the review issue
+        if: steps.check.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          {
+            echo "The scheduled check found changed or unreachable official pages."
+            echo
+            cat data/guide-freshness.md
+            echo
+            echo "_The baseline does not update itself. After reviewing, run \`npm run guide:sources -- --write\` to accept the new pages._"
+          } > issue.md
+          existing=$(gh issue list --state open --search 'Guide freshness in:title' --json number --jq '.[0].number')
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --body-file issue.md
+          else
+            gh issue create --title "Guide freshness: review changed IRCC pages" --body-file issue.md
+          fi
