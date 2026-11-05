@@ -1,0 +1,927 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>CRS 2026: Express Entry score and latest draw | MapleRoute</title>
+    <meta
+      name="description"
+      content="How the 2026 Express Entry CRS is scored out of 1,270, the November 3 high-wage changes, the latest draw, and a free score estimate."
+    />
+    <meta name="robots" content="index, follow" />
+    <meta name="theme-color" content="#FFFFFF" />
+    <link rel="canonical" href="/crs-2026/" />
+
+    <meta property="og:type" content="article" />
+    <meta
+      property="og:title"
+      content="CRS 2026: Express Entry score and latest draw"
+    />
+    <meta
+      property="og:description"
+      content="The 2026 CRS rules, the November 3 high-wage changes, the latest draw and a free score estimate from MapleRoute."
+    />
+    <meta property="og:site_name" content="MapleRoute" />
+    <meta name="twitter:card" content="summary" />
+    <meta
+      name="twitter:title"
+      content="CRS 2026: Express Entry score and latest draw"
+    />
+    <meta
+      name="twitter:description"
+      content="The 2026 CRS rules, the November 3 high-wage changes, the latest draw and a free score estimate from MapleRoute."
+    />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        "name": "CRS 2026: Express Entry score and latest draw",
+        "description": "How the 2026 Express Entry CRS is scored out of 1,270, the November 3 high-wage changes, the latest draw, and a free score estimate.",
+        "inLanguage": "en-CA",
+        "dateModified": "2026-11-05",
+        "publisher": { "@type": "Organization", "name": "MapleRoute" }
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "What is the maximum CRS score in 2026?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "The maximum is 1,270 points. Core human capital is worth up to 570 without a spouse, or 530 plus up to 40 spouse or partner points with a spouse. Skill transferability adds up to 100 and additional factors add up to 600."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What changed in the CRS on November 3, 2026?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "IRCC changed the Labour Market Integration factor. It now awards points for Canadian work experience in a high-wage occupation or a qualifying high-wage job offer, whichever scores higher. The two are not added together."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What was the latest Express Entry draw?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "The latest draw in MapleRoute's data is 477 points on October 28, 2026, for Transport Occupations, 2026-Version 2. IRCC paused draws from November 3 while scores were recalculated. Cutoffs change with every draw, so check IRCC's official rounds page."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does MapleRoute calculate my official CRS score?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. MapleRoute gives an estimate using IRCC's published criteria. IRCC calculates your official score after you submit an Express Entry profile."
+            }
+          }
+        ]
+      }
+    </script>
+
+    <style>
+      :root {
+        --canvas: #ffffff;
+        --surface: #f7f7f8;
+        --line: #e9e9ec;
+        --ink: #111111;
+        --muted: #5f6672;
+        --accent: #d52b1e;
+        --accent-pressed: #b82318;
+        --success-surface: #eaf4ee;
+        --success: #1f7a4d;
+        --radius-card: 16px;
+        --radius-panel: 24px;
+        --shadow: 0 18px 50px rgba(17, 17, 17, 0.08);
+        --font: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        background: var(--canvas);
+        color: var(--ink);
+        font-family: var(--font);
+        font-size: 17px;
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      a {
+        color: var(--accent);
+        text-underline-offset: 3px;
+      }
+
+      a:hover {
+        color: var(--accent-pressed);
+      }
+
+      :focus-visible {
+        outline: 3px solid var(--ink);
+        outline-offset: 3px;
+        border-radius: 6px;
+      }
+
+      .skip {
+        position: absolute;
+        left: 16px;
+        top: -80px;
+        z-index: 10;
+        background: var(--ink);
+        color: #fff;
+        padding: 12px 18px;
+        border-radius: 10px;
+        text-decoration: none;
+      }
+
+      .skip:focus {
+        top: 16px;
+        color: #fff;
+      }
+
+      .wrap {
+        width: min(1040px, calc(100% - 40px));
+        margin: 0 auto;
+      }
+
+      header {
+        border-bottom: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.94);
+        position: sticky;
+        top: 0;
+        z-index: 5;
+        backdrop-filter: blur(10px);
+      }
+
+      .bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        min-height: 68px;
+      }
+
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+        color: var(--ink);
+        font-weight: 700;
+        font-size: 19px;
+        letter-spacing: -0.4px;
+        text-decoration: none;
+      }
+
+      .brand svg {
+        flex: none;
+      }
+
+      nav {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        font-size: 14px;
+        font-weight: 500;
+      }
+
+      nav a {
+        color: var(--muted);
+        text-decoration: none;
+      }
+
+      nav a:hover {
+        color: var(--ink);
+      }
+
+      .hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1.25fr) minmax(280px, 0.75fr);
+        gap: 48px;
+        align-items: center;
+        padding: 72px 0 64px;
+      }
+
+      .eyebrow {
+        margin: 0 0 14px;
+        color: var(--accent);
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(38px, 5vw, 58px);
+        line-height: 1.05;
+        letter-spacing: -0.045em;
+      }
+
+      .lede {
+        margin: 20px 0 0;
+        max-width: 37em;
+        color: var(--muted);
+        font-size: 19px;
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 28px;
+      }
+
+      .button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 52px;
+        padding: 0 22px;
+        border-radius: 12px;
+        border: 1px solid transparent;
+        font-size: 15px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: background-color 160ms ease, border-color 160ms ease;
+      }
+
+      .button.primary {
+        background: var(--accent);
+        color: #fff;
+      }
+
+      .button.primary:hover {
+        background: var(--accent-pressed);
+        color: #fff;
+      }
+
+      .button.secondary {
+        background: var(--canvas);
+        border-color: var(--line);
+        color: var(--ink);
+      }
+
+      .button.secondary:hover {
+        background: var(--surface);
+        color: var(--ink);
+      }
+
+      .verified {
+        margin: 18px 0 0;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .draw-card {
+        background: var(--ink);
+        color: #fff;
+        border-radius: var(--radius-panel);
+        padding: 28px;
+        box-shadow: var(--shadow);
+      }
+
+      .draw-card .label {
+        margin: 0;
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+
+      .draw-score {
+        margin: 10px 0 0;
+        font-size: 64px;
+        font-weight: 700;
+        line-height: 1;
+        letter-spacing: -0.05em;
+        color: #fff;
+      }
+
+      .draw-score span {
+        font-size: 16px;
+        font-weight: 500;
+        letter-spacing: 0;
+        color: rgba(255, 255, 255, 0.7);
+      }
+
+      .draw-card .detail {
+        margin: 14px 0 0;
+        color: rgba(255, 255, 255, 0.86);
+        font-size: 15px;
+      }
+
+      .draw-card .note {
+        margin: 16px 0 0;
+        padding-top: 16px;
+        border-top: 1px solid rgba(255, 255, 255, 0.18);
+        color: rgba(255, 255, 255, 0.72);
+        font-size: 13px;
+        line-height: 1.5;
+      }
+
+      .draw-card a {
+        color: #fff;
+      }
+
+      section {
+        padding: 56px 0;
+      }
+
+      section + section {
+        border-top: 1px solid var(--line);
+      }
+
+      h2 {
+        margin: 0;
+        font-size: clamp(27px, 3.4vw, 36px);
+        line-height: 1.15;
+        letter-spacing: -0.03em;
+      }
+
+      .section-intro {
+        margin: 14px 0 0;
+        max-width: 42em;
+        color: var(--muted);
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+        margin-top: 28px;
+      }
+
+      .card {
+        border: 1px solid var(--line);
+        border-radius: var(--radius-card);
+        padding: 22px;
+        background: var(--canvas);
+      }
+
+      .card h3 {
+        margin: 0;
+        font-size: 17px;
+        letter-spacing: -0.01em;
+      }
+
+      .card .points {
+        margin: 8px 0 0;
+        color: var(--accent);
+        font-size: 30px;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+      }
+
+      .card p {
+        margin: 8px 0 0;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .callout {
+        margin-top: 24px;
+        padding: 18px 20px;
+        border-radius: var(--radius-card);
+        background: var(--surface);
+        color: var(--muted);
+        font-size: 15px;
+      }
+
+      .table-wrap {
+        margin-top: 26px;
+        overflow-x: auto;
+        border: 1px solid var(--line);
+        border-radius: var(--radius-card);
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 15px;
+        min-width: 620px;
+      }
+
+      caption {
+        padding: 16px 18px;
+        text-align: left;
+        color: var(--muted);
+        font-size: 13px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      th,
+      td {
+        padding: 15px 18px;
+        text-align: left;
+        border-bottom: 1px solid var(--line);
+        vertical-align: top;
+      }
+
+      thead th {
+        background: var(--surface);
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+      }
+
+      tbody tr:last-child th,
+      tbody tr:last-child td {
+        border-bottom: 0;
+      }
+
+      td.num {
+        font-variant-numeric: tabular-nums;
+        font-weight: 600;
+      }
+
+      .scroll-hint {
+        display: none;
+        margin: 8px 0 0;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .faq {
+        display: grid;
+        gap: 12px;
+        margin-top: 26px;
+      }
+
+      details {
+        border: 1px solid var(--line);
+        border-radius: var(--radius-card);
+        padding: 18px 20px;
+        background: var(--canvas);
+      }
+
+      summary {
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 16px;
+        list-style-position: outside;
+        padding-left: 2px;
+      }
+
+      details p {
+        margin: 12px 0 0;
+        color: var(--muted);
+        font-size: 15px;
+      }
+
+      .cta {
+        margin: 8px 0 72px;
+        padding: 36px;
+        border-radius: var(--radius-panel);
+        background: var(--surface);
+      }
+
+      .cta h2 {
+        max-width: 20em;
+      }
+
+      .cta p {
+        max-width: 40em;
+        margin: 12px 0 0;
+        color: var(--muted);
+      }
+
+      footer {
+        border-top: 1px solid var(--line);
+        padding: 32px 0 48px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .footer-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px 36px;
+        justify-content: space-between;
+        align-items: flex-start;
+      }
+
+      .footer-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 20px;
+      }
+
+      .footer-links a {
+        color: var(--muted);
+      }
+
+      .sources {
+        margin: 18px 0 0;
+        padding: 18px 20px;
+        border-radius: var(--radius-card);
+        background: var(--surface);
+      }
+
+      .sources p {
+        margin: 0 0 8px;
+        color: var(--ink);
+        font-weight: 600;
+      }
+
+      .sources ul {
+        margin: 0;
+        padding-left: 20px;
+      }
+
+      .sources li + li {
+        margin-top: 4px;
+      }
+
+      .disclaimer {
+        margin: 18px 0 0;
+        max-width: 62em;
+      }
+
+      @media (max-width: 860px) {
+        .hero {
+          grid-template-columns: 1fr;
+          gap: 34px;
+          padding: 52px 0 48px;
+        }
+
+        .grid {
+          grid-template-columns: 1fr;
+        }
+
+        nav .hide-small {
+          display: none;
+        }
+
+        .scroll-hint {
+          display: block;
+        }
+      }
+
+      @media (max-width: 560px) {
+        body {
+          font-size: 16px;
+        }
+
+        .wrap {
+          width: min(100% - 32px, 1040px);
+        }
+
+        .draw-card,
+        .cta {
+          padding: 24px;
+        }
+
+        .draw-score {
+          font-size: 54px;
+        }
+
+        nav {
+          gap: 14px;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        html {
+          scroll-behavior: auto;
+        }
+
+        * {
+          transition: none !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+
+    <header>
+      <div class="wrap bar">
+        <a class="brand" href="/crs" aria-label="MapleRoute home">
+          <svg
+            width="24"
+            height="24"
+            viewBox="2680 275 4240 4240"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <path
+              fill="#D52B1E"
+              d="m4890 4430-45-863a95 95 0 0 1 111-98l859 151-116-320a65 65 0 0 1 20-73l941-762-212-99a65 65 0 0 1-34-79l186-572-542 115a65 65 0 0 1-73-38l-105-247-423 454a65 65 0 0 1-111-57l204-1052-327 189a65 65 0 0 1-91-27l-332-652-332 652a65 65 0 0 1-91 27l-327-189 204 1052a65 65 0 0 1-111 57l-423-454-105 247a65 65 0 0 1-73 38l-542-115 186 572a65 65 0 0 1-34 79l-212 99 941 762a65 65 0 0 1 20 73l-116 320 859-151a95 95 0 0 1 111 98l-45 863z"
+            />
+          </svg>
+          MapleRoute
+        </a>
+        <nav aria-label="Main">
+          <a class="hide-small" href="#changes">November changes</a>
+          <a class="hide-small" href="#faq">Questions</a>
+          <a class="button primary" href="/crs">Check my score</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main">
+      <div class="wrap">
+        <section class="hero" aria-labelledby="page-title">
+          <div>
+            <p class="eyebrow">CRS · 2026 rules</p>
+            <h1 id="page-title">
+              CRS 2026: how your Express Entry score is calculated
+            </h1>
+            <p class="lede">
+              Express Entry scores profiles with the Comprehensive Ranking
+              System (CRS). MapleRoute's calculator uses the rules in force from
+              November 3, 2026 and shows your estimate out of 1,270.
+            </p>
+            <div class="actions">
+              <a class="button primary" href="/crs">Check your CRS score</a>
+              <a class="button secondary" href="/express-entry"
+                >Open the step-by-step guide</a
+              >
+            </div>
+            <p class="verified">
+              Rules effective November 3, 2026 · Verified November 5, 2026
+            </p>
+          </div>
+
+          <aside class="draw-card" aria-labelledby="draw-title">
+            <p class="label" id="draw-title">Latest draw in our data</p>
+            <p class="draw-score">477 <span>points</span></p>
+            <p class="detail">
+              October 28, 2026<br />
+              Transport Occupations, 2026-Version 2
+            </p>
+            <p class="note">
+              IRCC paused draws from November 3 while it recalculated scores.
+              Cutoffs change with every draw —
+              <a
+                href="https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/rounds-invitations.html"
+                target="_blank"
+                rel="noopener noreferrer"
+                >check the official rounds page</a
+              >.
+            </p>
+          </aside>
+        </section>
+
+        <section id="score" aria-labelledby="score-title">
+          <h2 id="score-title">What makes up the 1,270 points</h2>
+          <p class="section-intro">
+            The CRS has three parts. With a spouse or common-law partner, the
+            core is 530 and a spouse section adds 40; without one, the core is
+            570. Either way, the maximum is 1,270.
+          </p>
+
+          <div class="grid">
+            <article class="card">
+              <h3>Core human capital</h3>
+              <p class="points">up to 570</p>
+              <p>
+                Age, education, first official language and Canadian work
+                experience.
+              </p>
+            </article>
+            <article class="card">
+              <h3>Skill transferability</h3>
+              <p class="points">up to 100</p>
+              <p>
+                Combinations such as education with language, or education with
+                Canadian work experience.
+              </p>
+            </article>
+            <article class="card">
+              <h3>Additional factors</h3>
+              <p class="points">up to 600</p>
+              <p>
+                Factors such as a provincial nomination, French ability, a
+                sibling in Canada or Canadian post-secondary education.
+              </p>
+            </article>
+          </div>
+
+          <p class="callout">
+            With a spouse or common-law partner, core human capital is worth up
+            to 530, spouse or partner factors up to 40, skill transferability up
+            to 100 and additional factors up to 600 — still 1,270 in total.
+          </p>
+        </section>
+
+        <section id="changes" aria-labelledby="changes-title">
+          <h2 id="changes-title">What changed on November 3, 2026</h2>
+          <p class="section-intro">
+            IRCC changed the Labour Market Integration factor. It now awards
+            points for Canadian work experience in a high-wage occupation or a
+            qualifying high-wage job offer — whichever scores higher. The two
+            are never added together.
+          </p>
+
+          <div class="table-wrap" tabindex="0" role="region" aria-label="High-wage points table">
+            <table>
+              <caption>
+                Points in MapleRoute's 2026 calculator, from IRCC's published
+                high-wage criteria.
+              </caption>
+              <thead>
+                <tr>
+                  <th scope="col">Wage tier</th>
+                  <th scope="col">High-wage Canadian work experience</th>
+                  <th scope="col">Qualifying high-wage job offer</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row">At least 2× the average median wage</th>
+                  <td class="num">70</td>
+                  <td class="num">100</td>
+                </tr>
+                <tr>
+                  <th scope="row">At least 1.5×, but under 2×</th>
+                  <td class="num">40</td>
+                  <td class="num">70</td>
+                </tr>
+                <tr>
+                  <th scope="row">At least 1.3×, but under 1.5×</th>
+                  <td class="num">20</td>
+                  <td class="num">50</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="scroll-hint">Swipe the table to see job-offer points.</p>
+
+          <p class="callout">
+            MapleRoute awards high-wage work experience points only when the
+            time in those occupations is 12 months or more. The calculator
+            takes the higher of the work-experience score and the job-offer
+            score.
+          </p>
+
+          <p class="section-intro">
+            Read IRCC's
+            <a
+              href="https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/changes.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              >summary of the changes</a
+            >
+            and its
+            <a
+              href="https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/check-score/high-wage.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              >high-wage occupation criteria</a
+            >.
+          </p>
+        </section>
+
+        <section id="faq" aria-labelledby="faq-title">
+          <h2 id="faq-title">Common questions</h2>
+
+          <div class="faq">
+            <details>
+              <summary>What is the maximum CRS score in 2026?</summary>
+              <p>
+                The maximum is 1,270 points. Core human capital is worth up to
+                570 without a spouse, or 530 plus up to 40 spouse or partner
+                points with a spouse. Skill transferability adds up to 100 and
+                additional factors add up to 600.
+              </p>
+            </details>
+
+            <details>
+              <summary>What changed in the CRS on November 3, 2026?</summary>
+              <p>
+                IRCC changed the Labour Market Integration factor. It now
+                awards points for Canadian work experience in a high-wage
+                occupation or a qualifying high-wage job offer, whichever
+                scores higher. The two are not added together.
+              </p>
+            </details>
+
+            <details>
+              <summary>What was the latest Express Entry draw?</summary>
+              <p>
+                The latest draw in MapleRoute's data is 477 points on October
+                28, 2026, for Transport Occupations, 2026-Version 2. IRCC
+                paused draws from November 3 while scores were recalculated.
+                Cutoffs change with every draw, so check
+                <a
+                  href="https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/rounds-invitations.html"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >IRCC's official rounds page</a
+                >.
+              </p>
+            </details>
+
+            <details>
+              <summary>Does MapleRoute calculate my official CRS score?</summary>
+              <p>
+                No. MapleRoute gives an estimate using IRCC's published
+                criteria. IRCC calculates your official score after you submit
+                an Express Entry profile.
+              </p>
+            </details>
+          </div>
+        </section>
+
+        <section class="cta" aria-labelledby="cta-title">
+          <h2 id="cta-title">See your estimate, then follow the steps</h2>
+          <p>
+            Answer a few questions to see your CRS estimate, then use the guide
+            to move through the Express Entry process one step at a time.
+          </p>
+          <div class="actions">
+            <a class="button primary" href="/crs">Check your CRS score</a>
+            <a class="button secondary" href="/express-entry"
+              >Open the guide</a
+            >
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer>
+      <div class="wrap">
+        <div class="footer-grid">
+          <div>
+            <strong>MapleRoute</strong><br />
+            A step-by-step companion for Canadian permanent residence.
+          </div>
+          <div class="footer-links">
+            <a href="/crs">CRS calculator</a>
+            <a href="/express-entry">Guide</a>
+            <a href="/privacy">Privacy</a>
+            <a href="/terms">Terms</a>
+            <a href="/accessibility">Accessibility</a>
+          </div>
+        </div>
+
+        <div class="sources">
+          <p>Official sources</p>
+          <ul>
+            <li>
+              <a
+                href="https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/check-score/crs-criteria.html"
+                target="_blank"
+                rel="noopener noreferrer"
+                >IRCC CRS criteria</a
+              >
+            </li>
+            <li>
+              <a
+                href="https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/changes.html"
+                target="_blank"
+                rel="noopener noreferrer"
+                >IRCC changes to Express Entry</a
+              >
+            </li>
+            <li>
+              <a
+                href="https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/check-score/high-wage.html"
+                target="_blank"
+                rel="noopener noreferrer"
+                >IRCC high-wage occupations</a
+              >
+            </li>
+            <li>
+              <a
+                href="https://www.canada.ca/en/immigration-refugees-citizenship/news/2026/10/changes-to-express-entry-for-high-wage-occupations.html"
+                target="_blank"
+                rel="noopener noreferrer"
+                >IRCC news release, October 2026</a
+              >
+            </li>
+            <li>
+              <a
+                href="https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/rounds-invitations.html"
+                target="_blank"
+                rel="noopener noreferrer"
+                >IRCC rounds of invitations</a
+              >
+            </li>
+          </ul>
+        </div>
+
+        <p class="disclaimer">
+          MapleRoute is an independent guide. It is not legal or immigration
+          advice and is not affiliated with IRCC or the Government of Canada.
+          Always confirm the rules and draw results on canada.ca.
+        </p>
+      </div>
+    </footer>
+  </body>
+</html>

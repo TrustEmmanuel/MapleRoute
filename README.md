@@ -175,7 +175,7 @@ src/
   theme/tokens.json        Colours, radius, spacing
 supabase/migrations/       SQL to paste into the Supabase SQL editor
 assets/images/             App icon, adaptive icon, splash, favicon
-public/                    PWA manifest, service worker, install icons, guide screenshots
+public/                    PWA manifest, service worker, install icons, guide screenshots, static CRS 2026 landing page
 ```
 
 Design tokens live in `src/theme/tokens.json` and feed both `tailwind.config.js` and TypeScript. Change a colour once and both pick it up.
@@ -210,6 +210,10 @@ The web build is an installable app. `public/manifest.webmanifest` sets the home
 Once the guide has started or a CRS score is saved, the home score card offers **Share my progress**. It opens the phone's share sheet when the browser supports it; otherwise it opens a dialog with WhatsApp and copy-link actions. The message reads like `My Express Entry plan — 12 of 53 steps, CRS 512.` followed by the link.
 
 The link points to `/share?done=12&total=53&score=512`. That page is public: it does not read the account or require a login, and it renders only the two counts and the score from the query string. It never contains an email, a name or any answers. The page ends with a **Build my own plan** button that opens the guide.
+
+## SEO landing pages
+
+`public/crs-2026/index.html` is a static, crawlable page at `/crs-2026/`. It explains the 2026 CRS rules, the November 3 high-wage changes and the latest draw, with FAQ structured data and links to the official canada.ca sources. It is plain HTML rather than an Expo route so search engines and link previews see the copy and metadata without running JavaScript. The public share card links to it. Add the production domain and a sitemap once hosting is fixed; the canonical currently uses the relative path `/crs-2026/`.
 
 ## Cookieless analytics and error monitoring
 

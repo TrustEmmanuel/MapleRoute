@@ -59,6 +59,10 @@ function startServer() {
     const candidate = path.join(DIST, pathname);
     let file = candidate;
 
+    if (file.startsWith(DIST) && fs.existsSync(file) && fs.statSync(file).isDirectory()) {
+      file = path.join(file, "index.html");
+    }
+
     if (!file.startsWith(DIST) || !fs.existsSync(file) || fs.statSync(file).isDirectory()) {
       file = path.join(DIST, "index.html");
     }
@@ -227,6 +231,18 @@ async function main() {
   assert.ok(manifest.name?.includes("MapleRoute"), "Manifest has no name");
   assert.equal(manifest.display, "standalone", "Manifest is not installable");
   pass("web manifest is served and installable");
+
+  const landingResponse = await fetch(`${origin}/crs-2026/`);
+  assert.equal(landingResponse.status, 200, "CRS 2026 landing page did not load");
+  const landing = await landingResponse.text();
+  assert.match(landing, /<title>CRS 2026: Express Entry score and latest draw/, "Landing page title is missing");
+  assert.match(landing, /name="description"/, "Landing page description is missing");
+  assert.match(landing, /rel="canonical" href="\/crs-2026\/"/, "Landing page canonical is missing");
+  assert.match(landing, /"@type": "FAQPage"/, "Landing page FAQ structured data is missing");
+  assert.match(landing, /477/, "Landing page is missing the latest draw");
+  assert.match(landing, /November 3, 2026/, "Landing page is missing the rule date");
+  assert.match(landing, /href="\/crs"/, "Landing page does not link to the calculator");
+  pass("CRS 2026 landing page is static, crawlable HTML");
 
   profile = path.join(
     process.env.TEMP ?? "/tmp",
@@ -453,6 +469,14 @@ async function main() {
   assert.ok(share.text.includes("CRS score"), "Share page is missing the score");
   assert.ok(share.text.includes("512"), "Share page is missing the score value");
   pass("public share card opens without a login");
+
+  await cdp.click("How the 2026 CRS score works");
+  await waitFor(
+    () => cdp.evaluate('location.pathname === "/crs-2026/"'),
+    "link to the CRS 2026 landing page",
+  );
+  await cdp.waitForText("CRS 2026");
+  pass("share card links to the CRS 2026 landing page");
 
   await cdp.navigate("/privacy");
   await cdp.waitForText("Analytics and error reports");

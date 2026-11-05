@@ -258,6 +258,23 @@ export default function ShareScreen() {
           </Card>
         )}
 
+        {Platform.OS === "web" ? (
+          <Pressable
+            accessibilityRole="link"
+            accessibilityLabel="How the 2026 CRS score works"
+            onPress={() => {
+              if (typeof window !== "undefined") {
+                window.location.assign("/crs-2026/");
+              }
+            }}
+            className="mt-6 min-h-[44px] items-center justify-center active:opacity-70"
+          >
+            <Text variant="small" tone="accent" className="font-inter-medium">
+              How the 2026 CRS score works
+            </Text>
+          </Pressable>
+        ) : null}
+
         <Disclaimer className="mt-8" />
       </View>
     </Screen>
