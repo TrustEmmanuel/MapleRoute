@@ -138,6 +138,7 @@ src/
     privacy.tsx            Public privacy policy
     terms.tsx              Public terms of use
     accessibility.tsx      Public accessibility statement
+    share.tsx              Public progress card; opens without an account
     (tabs)/
       _layout.tsx          Auth guard, tabs, desktop web header
       index.tsx            Home: score badge, next action, journey
@@ -160,6 +161,8 @@ src/
     crs/crs-result.tsx     Score result and breakdown
     pwa/pwa-provider.tsx   Install prompt, offline status, service worker
     pwa/install-card.tsx   Install card on Home and Settings
+    share/share-link.ts    Share text, URL and WhatsApp helpers
+    share/share-progress.tsx  Share button and fallback dialog
   lib/
     supabase.ts            Client, config check, auth options
     device-storage.ts      Web localStorage fallback
@@ -197,6 +200,12 @@ The web build is an installable app. `public/manifest.webmanifest` sets the home
 - Bump `VERSION` in `public/sw.js` when the shell or a screenshot at an existing path changes, so devices fetch the new copy.
 - The install card appears on Home (phones) and in Settings, and disappears once the app is installed. iPhone and iPad instructions point to Safari's Add to Home Screen.
 
+## Shareable progress card
+
+Once the guide has started or a CRS score is saved, the home score card offers **Share my progress**. It opens the phone's share sheet when the browser supports it; otherwise it opens a dialog with WhatsApp and copy-link actions. The message reads like `My Express Entry plan — 12 of 53 steps, CRS 512.` followed by the link.
+
+The link points to `/share?done=12&total=53&score=512`. That page is public: it does not read the account or require a login, and it renders only the two counts and the score from the query string. It never contains an email, a name or any answers. The page ends with a **Build my own plan** button that opens the guide.
+
 ## Troubleshooting
 
 - **Login shows "Connect Supabase to turn on accounts"**: `.env` is missing or the dev server started before it was saved. Fix the file, stop the server, and start it again.
@@ -211,7 +220,7 @@ MapleRoute never asks for your IRCC password, UCI, or passport number. In the lo
 
 Settings → **Delete my account and data** clears every per-account key on the device and signs out. For hosted accounts it also deletes the auth user through `supabase/migrations/20261105_delete_own_account.sql`; run that after the Phase 1 SQL. The profiles and CRS snapshot rows are removed by the existing `on delete cascade` rules.
 
-The privacy policy, terms and accessibility statement are public routes: `/privacy`, `/terms` and `/accessibility`.
+The privacy policy, terms and accessibility statement, and progress-card page are public routes: `/privacy`, `/terms`, `/accessibility` and `/share`.
 
 `npm run a11y:contrast` checks the colour tokens against WCAG AA. Keyboard focus is visible, while mouse clicks do not leave a focus ring.
 

@@ -77,6 +77,7 @@ export default function RootLayout() {
                   name="accessibility"
                   options={{ animation: "slide_from_right" }}
                 />
+                <Stack.Screen name="share" options={{ animation: "fade" }} />
               </Stack>
             </GuideProvider>
           </CrsProvider>

@@ -26,6 +26,7 @@ import { useDocumentDates } from "@/features/planning/use-document-dates";
 import { InstallCard } from "@/features/pwa/install-card";
 import { downloadCheckInIcs, formatCheckInDate } from "@/features/retention/check-in";
 import { useCheckInReminder } from "@/features/retention/use-check-in-reminder";
+import { ShareProgressButton } from "@/features/share/share-progress";
 import {
   GUIDE_UPDATES,
   formatUpdateDate,
@@ -354,6 +355,13 @@ export default function HomeScreen() {
           />
         </>
       )}
+      {started ? (
+        <ShareProgressButton
+          done={doneSteps}
+          total={totalSteps}
+          score={latest?.score ?? null}
+        />
+      ) : null}
     </Card>
   );
 
