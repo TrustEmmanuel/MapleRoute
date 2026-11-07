@@ -27,6 +27,7 @@ export default function CrsScreen() {
     save,
     updateDraft,
     clearDraft,
+    clearAnswers,
   } = useCrs();
   const [editing, setEditing] = useState(false);
   const [synced, setSynced] = useState<boolean | null>(null);
@@ -58,6 +59,7 @@ export default function CrsScreen() {
         saved={latest}
         syncNote={syncNote}
         onEdit={() => setEditing(true)}
+        onClearAnswers={clearAnswers}
       />
     );
   }

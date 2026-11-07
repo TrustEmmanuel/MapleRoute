@@ -35,6 +35,7 @@ type CrsContextValue = {
   ) => Promise<{ synced: boolean }>;
   updateDraft: (inputs: CrsInputs) => void;
   clearDraft: () => void;
+  clearAnswers: () => Promise<{ ok: boolean }>;
 };
 
 const CrsContext = createContext<CrsContextValue | null>(null);
@@ -132,6 +133,23 @@ export function CrsProvider({ children }: { children: ReactNode }) {
     setDraft(null);
   }, [accountKey]);
 
+  const clearAnswers = useCallback(async () => {
+    if (remoteUserId && supabase) {
+      const { error } = await supabase
+        .from("crs_snapshots")
+        .delete()
+        .eq("user_id", remoteUserId);
+
+      if (error) return { ok: false };
+    }
+
+    removeLocalValue(cacheKey(accountKey));
+    removeLocalValue(draftKey(accountKey));
+    setLatest(null);
+    setDraft(null);
+    return { ok: true };
+  }, [remoteUserId, accountKey]);
+
   const save = useCallback(
     async (result: CrsResult, inputs: CrsInputs) => {
       const entry: SavedScore = {
@@ -172,8 +190,26 @@ export function CrsProvider({ children }: { children: ReactNode }) {
   );
 
   const value = useMemo(
-    () => ({ latest, draft, loading, hydrated, save, updateDraft, clearDraft }),
-    [latest, draft, loading, hydrated, save, updateDraft, clearDraft],
+    () => ({
+      latest,
+      draft,
+      loading,
+      hydrated,
+      save,
+      updateDraft,
+      clearDraft,
+      clearAnswers,
+    }),
+    [
+      latest,
+      draft,
+      loading,
+      hydrated,
+      save,
+      updateDraft,
+      clearDraft,
+      clearAnswers,
+    ],
   );
 
   return <CrsContext.Provider value={value}>{children}</CrsContext.Provider>;

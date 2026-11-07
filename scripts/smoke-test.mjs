@@ -369,6 +369,28 @@ async function main() {
   );
   pass("home page renders for a signed-in user");
 
+  await cdp.navigate("/crs");
+  await waitFor(
+    () =>
+      cdp.evaluate(
+        'document.body.innerText.toLowerCase().includes("your estimated crs score")',
+      ),
+    "saved CRS result",
+  );
+  await cdp.click("Clear answers");
+  await cdp.waitForText("Clear your CRS answers?");
+  await cdp.click("Yes, clear my answers");
+  await cdp.waitForText("Calculate my score");
+  await cdp.navigate("/");
+  await waitFor(
+    () =>
+      cdp.evaluate(
+        'document.body.innerText.toLowerCase().includes("crs not checked")',
+      ),
+    "cleared CRS state on home",
+  );
+  pass("clearing answers removes the saved score and returns to the form");
+
   await cdp.navigate("/express-entry");
   await cdp.waitForText("Express Entry");
   await waitFor(

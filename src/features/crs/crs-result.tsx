@@ -39,10 +39,12 @@ export function CrsResultView({
   saved,
   syncNote,
   onEdit,
+  onClearAnswers,
 }: {
   saved: SavedScore;
   syncNote?: string | null;
   onEdit: () => void;
+  onClearAnswers: () => Promise<{ ok: boolean }>;
 }) {
   const { result } = saved;
   const benchmark = result.benchmark;
@@ -50,6 +52,26 @@ export function CrsResultView({
   const [info, setInfo] = useState<"transferability" | "additional" | null>(
     null,
   );
+  const [confirmClear, setConfirmClear] = useState(false);
+  const [clearing, setClearing] = useState(false);
+  const [clearError, setClearError] = useState<string | null>(null);
+
+  function closeClearDialog() {
+    if (clearing) return;
+    setConfirmClear(false);
+    setClearError(null);
+  }
+
+  async function handleClearAnswers() {
+    setClearing(true);
+    setClearError(null);
+    const outcome = await onClearAnswers();
+    if (outcome.ok) return;
+    setClearing(false);
+    setClearError(
+      "Could not clear your saved score. Check your connection and try again.",
+    );
+  }
 
   function openGuide(path: "/guide/skill-transferability" | "/guide/additional-points") {
     setInfo(null);
@@ -234,6 +256,51 @@ export function CrsResultView({
         label="Update my answers"
         onPress={onEdit}
       />
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Clear answers"
+        onPress={() => {
+          setClearError(null);
+          setConfirmClear(true);
+        }}
+        className="mt-3 min-h-[44px] items-center justify-center active:opacity-70"
+      >
+        <Text variant="small" className="font-inter-medium text-accent">
+          Clear answers
+        </Text>
+      </Pressable>
+
+      <InfoDialog
+        visible={confirmClear}
+        title="Clear your CRS answers?"
+        onClose={closeClearDialog}
+      >
+        <Text variant="body">
+          This removes your saved CRS score and every answer from this account,
+          so you can start the check again from the first question. This cannot
+          be undone.
+        </Text>
+        {clearError ? (
+          <Text variant="small" className="mt-3 text-accent">
+            {clearError}
+          </Text>
+        ) : null}
+        <View className="mt-5 gap-3">
+          <Button
+            variant="danger"
+            label="Yes, clear my answers"
+            loading={clearing}
+            loadingLabel="Clearing…"
+            onPress={() => void handleClearAnswers()}
+          />
+          <Button
+            variant="secondary"
+            label="Keep my answers"
+            disabled={clearing}
+            onPress={closeClearDialog}
+          />
+        </View>
+      </InfoDialog>
 
       <InfoDialog
         visible={info === "transferability"}
