@@ -8,11 +8,11 @@ import { useAuth } from "@/features/auth/auth-provider";
 import { colors } from "@/theme/theme";
 
 export default function TabsLayout() {
-  const { signedIn, loading } = useAuth();
+  const { signedIn, loading, needsName } = useAuth();
   const isWideWeb = useIsWideWeb();
 
   if (loading) return <LoadingScreen />;
-  if (!signedIn) return <Redirect href="/login" />;
+  if (!signedIn || needsName) return <Redirect href="/login" />;
 
   return (
     <View className="flex-1 bg-canvas">

@@ -332,13 +332,31 @@ async function main() {
   })()`);
   assert.ok(filled, "Login inputs were not found");
   await cdp.click("Sign in");
+  await cdp.waitForText("What should we call you");
+  const named = await cdp.evaluate(`(() => {
+    const inputs = [...document.querySelectorAll('input')];
+    if (inputs.length < 2) return false;
+    const setValue = (input, value) => {
+      const setter = Object.getOwnPropertyDescriptor(
+        HTMLInputElement.prototype,
+        'value'
+      ).set;
+      setter.call(input, value);
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+    };
+    setValue(inputs[0], 'Smoke');
+    setValue(inputs[1], 'Tester');
+    return true;
+  })()`);
+  assert.ok(named, "Name inputs were not found");
+  await cdp.click("Continue");
   await waitFor(
     () => cdp.evaluate('location.pathname !== "/login"'),
     "leave the login page",
   );
   await cdp.navigate("/");
   await cdp.waitForText("Get my score");
-  pass("local account sign-in reaches the home page");
+  pass("first sign-in asks for a name before entering the app");
 
   await cdp.navigate("/crs");
   await cdp.waitForText("Calculate my score");
@@ -362,12 +380,13 @@ async function main() {
   pass(`CRS score calculates and saves (${score})`);
 
   await cdp.navigate("/");
+  await cdp.waitForText("Welcome back, Smoke.");
   await cdp.waitForText("MapleRoute");
   await waitFor(
     () => cdp.evaluate('location.pathname === "/"'),
     "signed-in home page",
   );
-  pass("home page renders for a signed-in user");
+  pass("home page greets the signed-in person by name");
 
   await cdp.navigate("/crs");
   await waitFor(

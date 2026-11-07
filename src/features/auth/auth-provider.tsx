@@ -23,12 +23,20 @@ import {
 
 const LOCAL_ACCOUNT_KEY = "mapleroute.account";
 
-type LocalAccount = { email: string };
+type LocalAccount = {
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  nameConfirmed?: boolean;
+};
 
 type AuthContextValue = {
   session: Session | null;
   user: User | null;
   accountEmail: string | null;
+  accountFirstName: string | null;
+  accountLastName: string | null;
+  needsName: boolean;
   accountKey: string | null;
   remoteUserId: string | null;
   signedIn: boolean;
@@ -40,18 +48,45 @@ type AuthContextValue = {
     email: string,
     password: string,
     options?: { remember?: boolean },
-  ) => Promise<void>;
+  ) => Promise<{ needsName: boolean }>;
   signUp: (
     email: string,
     password: string,
-    options?: { remember?: boolean },
-  ) => Promise<{ needsConfirmation: boolean }>;
+    options?: { remember?: boolean; firstName?: string; lastName?: string },
+  ) => Promise<{ needsConfirmation: boolean; needsName: boolean }>;
+  setAccountName: (firstName: string, lastName: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
   deleteAccount: () => Promise<void>;
   enterPreview: () => void;
   exitPreview: () => void;
 };
+
+function cleanName(value: string) {
+  return value.trim().replace(/\s+/g, " ").slice(0, 40);
+}
+
+function metadataNames(user: User | null) {
+  const meta = (user?.user_metadata ?? {}) as Record<string, unknown>;
+  const confirmed = meta.mapleroute_name_confirmed === true;
+  const given = typeof meta.given_name === "string" ? cleanName(meta.given_name) : "";
+  const family =
+    typeof meta.family_name === "string" ? cleanName(meta.family_name) : "";
+  if (given) return { firstName: given, lastName: family, confirmed };
+
+  const full =
+    typeof meta.full_name === "string"
+      ? meta.full_name
+      : typeof meta.name === "string"
+        ? meta.name
+        : "";
+  const parts = cleanName(full).split(" ").filter(Boolean);
+  return {
+    firstName: parts[0] ?? "",
+    lastName: parts.slice(1).join(" "),
+    confirmed,
+  };
+}
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
@@ -72,17 +107,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         null),
   );
 
-  const startLocalAccount = useCallback((email: string, remember = true) => {
-    const account = { email: email.trim() };
-    setLocalAccount(account);
-    if (remember) {
-      writeLocalValue(LOCAL_ACCOUNT_KEY, account);
-      removeSessionValue(LOCAL_ACCOUNT_KEY);
-    } else {
-      writeSessionValue(LOCAL_ACCOUNT_KEY, account);
-      removeLocalValue(LOCAL_ACCOUNT_KEY);
-    }
-  }, []);
+  const startLocalAccount = useCallback(
+    (
+      email: string,
+      remember = true,
+      names?: { firstName?: string; lastName?: string },
+    ) => {
+      const emailValue = email.trim();
+      const account: LocalAccount = { email: emailValue };
+      const firstName = cleanName(names?.firstName ?? "");
+      const lastName = cleanName(names?.lastName ?? "");
+
+      if (firstName) {
+        account.firstName = firstName;
+        account.lastName = lastName;
+        account.nameConfirmed = true;
+      } else {
+        const existing =
+          readLocalValue<LocalAccount>(LOCAL_ACCOUNT_KEY) ??
+          readSessionValue<LocalAccount>(LOCAL_ACCOUNT_KEY);
+        if (existing?.email.toLowerCase() === emailValue.toLowerCase()) {
+          if (existing.firstName) account.firstName = existing.firstName;
+          if (existing.lastName) account.lastName = existing.lastName;
+          if (existing.nameConfirmed) account.nameConfirmed = true;
+        }
+      }
+
+      setLocalAccount(account);
+      if (remember) {
+        writeLocalValue(LOCAL_ACCOUNT_KEY, account);
+        removeSessionValue(LOCAL_ACCOUNT_KEY);
+      } else {
+        writeSessionValue(LOCAL_ACCOUNT_KEY, account);
+        removeLocalValue(LOCAL_ACCOUNT_KEY);
+      }
+      return account;
+    },
+    [],
+  );
 
   useEffect(() => {
     if (!supabase) {
@@ -115,8 +177,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signIn = useCallback(
     async (email: string, password: string, options?: { remember?: boolean }) => {
       if (!supabase) {
-        startLocalAccount(email, options?.remember ?? true);
-        return;
+        const account = startLocalAccount(email, options?.remember ?? true);
+        return { needsName: !account.firstName || !account.nameConfirmed };
       }
       const { data, error } = await supabase.auth.signInWithPassword({
         email: email.trim(),
@@ -124,26 +186,100 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       if (error) throw error;
       setSession(data.session);
+      const names = metadataNames(data.session?.user ?? null);
+      return { needsName: !names.firstName || !names.confirmed };
     },
     [startLocalAccount],
   );
 
   const signUp = useCallback(
-    async (email: string, password: string, options?: { remember?: boolean }) => {
+    async (
+      email: string,
+      password: string,
+      options?: { remember?: boolean; firstName?: string; lastName?: string },
+    ) => {
       if (!supabase) {
-        startLocalAccount(email, options?.remember ?? true);
-        return { needsConfirmation: false };
+        const account = startLocalAccount(email, options?.remember ?? true, {
+          firstName: options?.firstName,
+          lastName: options?.lastName,
+        });
+        return {
+          needsConfirmation: false,
+          needsName: !account.firstName || !account.nameConfirmed,
+        };
       }
+      const firstName = cleanName(options?.firstName ?? "");
+      const lastName = cleanName(options?.lastName ?? "");
       const { data, error } = await supabase.auth.signUp({
         email: email.trim(),
         password,
-        options: { emailRedirectTo: webOrigin() },
+        options: {
+          emailRedirectTo: webOrigin(),
+          ...(firstName
+            ? {
+                data: {
+                  given_name: firstName,
+                  family_name: lastName,
+                  mapleroute_name_confirmed: true,
+                },
+              }
+            : {}),
+        },
       });
       if (error) throw error;
       setSession(data.session);
-      return { needsConfirmation: !data.session };
+      const names = data.session ? metadataNames(data.session.user) : null;
+      return {
+        needsConfirmation: !data.session,
+        needsName: names ? !names.firstName || !names.confirmed : false,
+      };
     },
     [startLocalAccount],
+  );
+
+  const setAccountName = useCallback(
+    async (firstName: string, lastName: string) => {
+      const first = cleanName(firstName);
+      const last = cleanName(lastName);
+      if (!first || !last) {
+        throw new Error("Enter your first and last name.");
+      }
+
+      if (session && supabase) {
+        const { data, error } = await supabase.auth.updateUser({
+          data: {
+            given_name: first,
+            family_name: last,
+            mapleroute_name_confirmed: true,
+          },
+        });
+        if (error) throw error;
+        const user = data.user;
+        if (user) {
+          setSession((current) => (current ? { ...current, user } : current));
+        }
+        return;
+      }
+
+      if (localAccount) {
+        const next: LocalAccount = {
+          ...localAccount,
+          firstName: first,
+          lastName: last,
+          nameConfirmed: true,
+        };
+        setLocalAccount(next);
+        if (readLocalValue<LocalAccount>(LOCAL_ACCOUNT_KEY)) {
+          writeLocalValue(LOCAL_ACCOUNT_KEY, next);
+        } else {
+          writeSessionValue(LOCAL_ACCOUNT_KEY, next);
+        }
+        return;
+      }
+
+      throw new Error("Sign in before adding your name.");
+    },
+    [session, localAccount],
   );
 
   const signInWithGoogle = useCallback(async () => {
@@ -210,20 +346,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const accountKey =
       remoteUserId ??
       (localAccount ? `local:${localAccount.email.toLowerCase()}` : null);
+    const names = session
+      ? metadataNames(session.user)
+      : localAccount
+        ? {
+            firstName: localAccount.firstName ?? "",
+            lastName: localAccount.lastName ?? "",
+            confirmed: localAccount.nameConfirmed === true,
+          }
+        : { firstName: "", lastName: "", confirmed: false };
+    const signedIn = Boolean(session || previewMode || localAccount);
 
     return {
       session,
       user: session?.user ?? null,
       accountEmail,
+      accountFirstName: names.firstName || null,
+      accountLastName: names.lastName || null,
+      needsName:
+        signedIn && !previewMode && (!names.firstName || !names.confirmed),
       accountKey,
       remoteUserId,
-      signedIn: Boolean(session || previewMode || localAccount),
+      signedIn,
       isLocalAccount: Boolean(localAccount && !session),
       loading,
       configured: isSupabaseConfigured,
       previewMode,
       signIn,
       signUp,
+      setAccountName,
       signInWithGoogle,
       signOut,
       deleteAccount,
@@ -237,6 +388,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     previewMode,
     signIn,
     signUp,
+    setAccountName,
     signInWithGoogle,
     signOut,
     deleteAccount,

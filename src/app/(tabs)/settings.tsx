@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { DetailRow, Divider } from "@/components/ui/rows";
 import { Text } from "@/components/ui/text";
+import { TextField } from "@/components/ui/text-field";
 import { useIsWideWeb } from "@/components/web-nav";
 import { useAuth } from "@/features/auth/auth-provider";
 import { useCrs } from "@/features/crs/crs-provider";
@@ -24,9 +25,12 @@ import { colors } from "@/theme/theme";
 export default function SettingsScreen() {
   const {
     accountEmail,
+    accountFirstName,
+    accountLastName,
     previewMode,
     isLocalAccount,
     configured,
+    setAccountName,
     signOut,
     deleteAccount,
     exitPreview,
@@ -39,8 +43,46 @@ export default function SettingsScreen() {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [editingName, setEditingName] = useState(false);
+  const [nameFirst, setNameFirst] = useState("");
+  const [nameLast, setNameLast] = useState("");
+  const [savingName, setSavingName] = useState(false);
+  const [nameError, setNameError] = useState<string | null>(null);
   const version = Constants.expoConfig?.version ?? "0.1.0";
   const hostedProject = getSupabaseHost();
+  const fullName = [accountFirstName, accountLastName].filter(Boolean).join(" ");
+
+  function openNameDialog() {
+    setNameFirst(accountFirstName ?? "");
+    setNameLast(accountLastName ?? "");
+    setNameError(null);
+    setEditingName(true);
+  }
+
+  function closeNameDialog() {
+    if (savingName) return;
+    setEditingName(false);
+    setNameError(null);
+  }
+
+  async function handleSaveName() {
+    if (!nameFirst.trim() || !nameLast.trim()) {
+      setNameError("Enter your first and last name.");
+      return;
+    }
+    setSavingName(true);
+    setNameError(null);
+    try {
+      await setAccountName(nameFirst, nameLast);
+      setEditingName(false);
+    } catch (error) {
+      setNameError(
+        error instanceof Error ? error.message : "Could not save your name.",
+      );
+    } finally {
+      setSavingName(false);
+    }
+  }
 
   async function handleSignOut() {
     setSigningOut(true);
@@ -118,6 +160,26 @@ export default function SettingsScreen() {
             label="Signed in as"
             value={previewMode ? "Preview mode" : (accountEmail ?? "—")}
           />
+          {!previewMode ? (
+            <>
+              <Divider />
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Edit your name"
+                onPress={openNameDialog}
+                className="min-h-[44px] flex-row items-center justify-between gap-4 py-3 active:opacity-70"
+              >
+                <Text variant="small" tone="muted">
+                  Your name
+                </Text>
+                <View className="flex-row items-center gap-2">
+                  <Text variant="small">{fullName || "Add your name"}</Text>
+                  <Ionicons name="create-outline" size={16} color={colors.muted} />
+                </View>
+              </Pressable>
+            </>
+          ) : null}
+
           {isLocalAccount ? (
             <>
               <Divider />
@@ -162,9 +224,9 @@ export default function SettingsScreen() {
           </Text>
           <Card className="mt-3 p-5">
             <Text variant="small" tone="muted">
-              Your CRS answers, guide progress and document dates are stored for
-              this account. Deleting removes them from this device and signs you
-              out. This cannot be undone.
+              Your name, CRS answers, guide progress and document dates are
+              stored for this account. Deleting removes them from this device
+              and signs you out. This cannot be undone.
             </Text>
             <Button
               className="mt-4"
@@ -276,12 +338,63 @@ export default function SettingsScreen() {
       </Text>
 
       <InfoDialog
+        visible={editingName}
+        title="Your name"
+        onClose={closeNameDialog}
+      >
+        <Text variant="body" tone="muted">
+          Your plan greets you with your first name. We never share it with IRCC.
+        </Text>
+        <View className="mt-4 gap-3">
+          <TextField
+            plainLabel
+            label="First name"
+            value={nameFirst}
+            onChangeText={setNameFirst}
+            placeholder="Emmanuel"
+            autoCapitalize="words"
+            autoComplete="given-name"
+            maxLength={40}
+          />
+          <TextField
+            plainLabel
+            label="Last name"
+            value={nameLast}
+            onChangeText={setNameLast}
+            placeholder="Udeka"
+            autoCapitalize="words"
+            autoComplete="family-name"
+            maxLength={40}
+          />
+        </View>
+        {nameError ? (
+          <Text variant="small" className="mt-3 text-accent">
+            {nameError}
+          </Text>
+        ) : null}
+        <View className="mt-5 gap-3">
+          <Button
+            label="Save name"
+            loading={savingName}
+            loadingLabel="Saving…"
+            onPress={() => void handleSaveName()}
+          />
+          <Button
+            variant="secondary"
+            label="Cancel"
+            disabled={savingName}
+            onPress={closeNameDialog}
+          />
+        </View>
+      </InfoDialog>
+
+      <InfoDialog
         visible={confirmDelete}
         title="Delete my account?"
         onClose={closeDeleteDialog}
       >
         <Text variant="body">
-          This removes your email and everything MapleRoute saved for this
+          This removes your name, email and everything MapleRoute saved for this
           account on this device: CRS answers and score, guide progress,
           document dates, band score and reminder. It signs you out and cannot
           be undone.

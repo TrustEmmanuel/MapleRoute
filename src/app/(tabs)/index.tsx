@@ -201,7 +201,7 @@ function SourceRow({
 }
 
 export default function HomeScreen() {
-  const { accountEmail, previewMode, isLocalAccount } = useAuth();
+  const { accountEmail, accountFirstName, previewMode, isLocalAccount } = useAuth();
   const { latest, loading } = useCrs();
   const { guide, hydrated, isAdmin, progress, position } = useGuide();
   const { seenId, ready: updatesReady } = useSeenUpdates();
@@ -215,7 +215,7 @@ export default function HomeScreen() {
   const { dates: documentDates, ready: documentsReady } = useDocumentDates();
   const isWideWeb = useIsWideWeb();
 
-  const name = accountEmail?.split("@")[0]?.replace(/[._-]+/g, " ");
+  const name = accountFirstName;
   const allSteps = useMemo(() => visibleSteps(guide, isAdmin), [guide, isAdmin]);
   const totalSteps = allSteps.length;
   const doneSteps = useMemo(

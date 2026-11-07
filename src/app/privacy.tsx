@@ -27,7 +27,7 @@ export default function PrivacyScreen() {
       <LegalSection title="What you enter">
         <LegalBullets
           items={[
-            "Your email address, and whether you chose to stay signed in.",
+            "Your first and last name, your email address, and whether you chose to stay signed in.",
             "Your CRS answers: age, marital status, education, language test results, work experience, spouse information, and factors such as a certificate, nomination, sibling in Canada, French ability or Canadian education.",
             "Your guide progress: finished steps, where you left off, preparation answers such as your NOC code, and any notes you write.",
             "Your documents and dates: dates printed on your documents, “I have this” marks, and an IELTS band score if you add one.",
@@ -55,14 +55,14 @@ export default function PrivacyScreen() {
       <LegalSection title="Where your data is stored">
         <LegalParagraph>
           This build keeps data in your browser’s local storage. If you turn
-          off “Keep me signed in”, your email is kept in session storage
-          instead. The data stays on your device and is not sent to us. Anyone
-          who can use your browser profile or device may be able to read it, so
-          use a device you control and sign out on shared computers.
+          off “Keep me signed in”, your name and email are kept in session
+          storage instead. The data stays on your device and is not sent to us.
+          Anyone who can use your browser profile or device may be able to read
+          it, so use a device you control and sign out on shared computers.
         </LegalParagraph>
         <LegalParagraph>
-          If hosted accounts are switched on in a build, your email and CRS
-          checks are stored with Supabase, the authentication and database
+          If hosted accounts are switched on in a build, your name, email and
+          CRS checks are stored with Supabase, the authentication and database
           provider for that build. Guide progress, document dates and notes
           stay in your browser. Row-level security stops one account from
           reading another account’s data.
@@ -140,8 +140,9 @@ export default function PrivacyScreen() {
       <LegalSection title="Deleting your account and data">
         <LegalParagraph>
           Open Settings and choose “Delete my account and data”. That removes
-          your email, CRS answers and score, guide progress and notes, document
-          dates, band score and reminder from this device, then signs you out.
+          your name and email, CRS answers and score, guide progress and notes,
+          document dates, band score and reminder from this device, then signs
+          you out.
           If your account is hosted, it also asks the server to delete the
           account and its saved CRS checks. This cannot be undone. Clearing
           your browser’s site data also removes the local copy.
