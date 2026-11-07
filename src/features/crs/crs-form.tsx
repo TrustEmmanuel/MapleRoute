@@ -4,6 +4,7 @@ import { Linking, View } from "react-native";
 import { BrandLockup } from "@/components/brand";
 import { CrsScoreBadge } from "@/components/crs-score-badge";
 import { Disclaimer } from "@/components/disclaimer";
+import { InfoHint } from "@/components/info-hint";
 import { Screen } from "@/components/screen";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -29,6 +30,7 @@ import {
 import {
   ABILITIES,
   CRS_RULES,
+  HIGH_WAGE_JOB_OFFER_POINTS,
   type Ability,
   type ClbBand,
   type CrsInputs,
@@ -369,6 +371,37 @@ export function CrsForm({
               options={HIGH_WAGE_TIER_OPTIONS}
               onChange={(value) => update("jobOfferTier", value)}
               helper="The level comes from the job's NOC on IRCC's high-wage list."
+              labelInfo={
+                <InfoHint
+                  label="How the job offer level changes your points"
+                  title="What the level is worth"
+                  guidePath="/guide/high-wage-job-offer"
+                >
+                  <Text variant="small" tone="muted">
+                    IRCC sets the level from the job&apos;s NOC median wage, not
+                    your salary. A qualifying offer earns:
+                  </Text>
+                  <View className="mt-1.5 gap-1">
+                    {HIGH_WAGE_TIER_OPTIONS.map((option) => (
+                      <View
+                        key={option.value}
+                        className="flex-row items-start justify-between gap-3"
+                      >
+                        <Text variant="small" tone="muted" className="flex-1">
+                          {option.label}
+                        </Text>
+                        <Text variant="small" className="font-inter-semibold">
+                          {HIGH_WAGE_JOB_OFFER_POINTS[option.value]} pts
+                        </Text>
+                      </View>
+                    ))}
+                  </View>
+                  <Text variant="small" tone="muted" className="mt-1.5">
+                    You get the higher of this and your high-wage
+                    work-experience points — never both.
+                  </Text>
+                </InfoHint>
+              }
             />
             <SourceLink
               label="Open IRCC's high-wage occupation list"

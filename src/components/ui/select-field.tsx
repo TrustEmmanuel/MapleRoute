@@ -1,5 +1,5 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import {
   Modal,
   Platform,
@@ -27,6 +27,7 @@ type SelectFieldProps<T extends string> = {
   options: SelectOption<T>[];
   onChange: (value: T) => void;
   helper?: string;
+  labelInfo?: ReactNode;
 };
 
 function useVisibleHeight(fallback: number) {
@@ -58,6 +59,7 @@ export function SelectField<T extends string>({
   options,
   onChange,
   helper,
+  labelInfo,
 }: SelectFieldProps<T>) {
   const [open, setOpen] = useState(false);
   const insets = useSafeAreaInsets();
@@ -72,10 +74,19 @@ export function SelectField<T extends string>({
   const listMaxHeight = Math.max(180, sheetMaxHeight - 72);
 
   return (
-    <View>
-      <Text variant="label" tone="muted">
-        {label}
-      </Text>
+    <View className={labelInfo ? "relative z-20" : undefined}>
+      {labelInfo ? (
+        <View className="relative z-10 flex-row items-center justify-between gap-2">
+          <Text variant="label" tone="muted" className="flex-1">
+            {label}
+          </Text>
+          {labelInfo}
+        </View>
+      ) : (
+        <Text variant="label" tone="muted">
+          {label}
+        </Text>
+      )}
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={`${label}. Selected: ${selected?.label ?? "None"}`}

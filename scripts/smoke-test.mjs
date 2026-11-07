@@ -391,6 +391,21 @@ async function main() {
   );
   pass("clearing answers removes the saved score and returns to the form");
 
+  await cdp.navigate("/crs");
+  await cdp.waitForText("Calculate my score");
+  await cdp.click("Qualifying job offer in a high-wage occupation: Yes");
+  await waitFor(
+    () =>
+      cdp.evaluate(`Boolean([...document.querySelectorAll('[aria-label]')].find(
+        (node) => node.getAttribute('aria-label') === 'How the job offer level changes your points — opens an explanation'
+      ))`),
+    "job offer info hint",
+  );
+  await cdp.navigate("/guide/high-wage-job-offer");
+  await cdp.waitForText("ONE FACTOR, NOT TWO");
+  await cdp.waitForText("100 pts");
+  pass("job offer info hint leads to the high-wage guide");
+
   await cdp.navigate("/express-entry");
   await cdp.waitForText("Express Entry");
   await waitFor(
