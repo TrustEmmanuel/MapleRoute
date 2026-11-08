@@ -424,7 +424,7 @@ const SEED_STEPS: Record<number, GuideStep[]> = {
       position: 1,
       title: "Get an Educational Credential Assessment (ECA)",
       instruction:
-        "If you studied outside Canada, you need an ECA to get points for your education. Use an organization IRCC designates: WES, ICAS, CES, IQAS or BCIT.\nThe assessment must be less than 5 years old when you complete your profile and when you apply, and it must assess the credential you're claiming.\nIf all your education is Canadian, you don't need an ECA. Choose that option below.",
+        "If you studied outside Canada, you need an ECA to get points for your education. Use an organization IRCC designates: WES, ICAS, CES, IQAS or BCIT.\nIf you use WES, order its ECA for immigration — the report WES sends to IRCC. A standard WES evaluation (document-by-document or course-by-course) is for jobs or school and can't be used instead.\nThe assessment must be less than 5 years old when you complete your profile and when you apply, and it must assess the credential you're claiming.\nIf all your education is Canadian, you don't need an ECA. Choose that option below.",
       officialUrl: ECA_URL,
       sourceUrl: ECA_URL,
       officialPageName: "Educational credential assessment",
@@ -452,12 +452,13 @@ const SEED_STEPS: Record<number, GuideStep[]> = {
           description:
             "The report from the designated organization, showing what your credential is equal to in Canada.",
           whereToGetIt:
-            "World Education Services (WES) is one of the organizations IRCC designates.",
+            "World Education Services (WES) is one of the organizations IRCC designates. Order the WES ECA for immigration, not a standard evaluation.",
           link: WES_ECA_URL,
         },
       ],
       commonMistakes: [
         "Using an organization that isn't designated by IRCC.",
+        "Ordering a standard WES evaluation instead of the WES ECA for IRCC.",
         "Ordering an assessment for a different credential than the one you're claiming.",
         "Letting the ECA expire — it's valid for 5 years.",
       ],
@@ -517,6 +518,17 @@ const SEED_STEPS: Record<number, GuideStep[]> = {
       officialPageName: "Get your documents ready",
       extraLinks: [
         { label: "Get your documents ready", url: DOCUMENTS_URL },
+      ],
+      requiredDocuments: [
+        { name: "Passport or travel document" },
+        { name: "Language test results" },
+        { name: "Proof of education or an educational credential assessment" },
+        { name: "Proof of work experience" },
+        { name: "Proof of funds" },
+        { name: "Police certificates" },
+        { name: "Job offer (if you have one)", optional: true },
+        { name: "Trade certificate (if you have one)", optional: true },
+        { name: "Provincial nomination (if you have one)", optional: true },
       ],
       screenshots: [
         {
@@ -633,7 +645,7 @@ const SEED_STEPS: Record<number, GuideStep[]> = {
           description:
             "The report from a designated organization showing what your credential is equal to in Canada.",
           whereToGetIt:
-            "World Education Services (WES) is one of the organizations IRCC designates.",
+            "World Education Services (WES) is one of the organizations IRCC designates. Order the WES ECA for immigration, not a standard evaluation.",
           link: WES_ECA_URL,
         },
       ],
@@ -1646,7 +1658,7 @@ export function createSeedGuide(): Guide {
     title: GUIDE_TITLE,
     description:
       "A step-by-step companion for the official IRCC Express Entry profile. Keep canada.ca open in another tab and follow along here. MapleRoute is an independent guide and is not affiliated with IRCC.",
-    version: "0.13.0",
+    version: "0.15.0",
     status: "draft",
     sections: SECTION_TITLES.map((title, index) => ({
       id: sectionId(index),

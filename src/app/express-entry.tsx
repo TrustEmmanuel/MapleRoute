@@ -72,6 +72,7 @@ export default function ExpressEntryProfileScreen() {
     isAdmin,
     progress,
     documents,
+    documentsLater,
     notes,
     prep,
     setPrep,
@@ -79,6 +80,7 @@ export default function ExpressEntryProfileScreen() {
     setPosition,
     toggleStep,
     setDocumentReady,
+    setDocumentLater,
     saveNote,
     reportStep,
   } = useGuide();
@@ -379,8 +381,12 @@ export default function ExpressEntryProfileScreen() {
           checked={Boolean(progress[active.step.id]?.checked)}
           onToggleChecked={(checked) => toggleStep(active.step.id, checked)}
           documentsReady={documents}
+          documentsLater={documentsLater}
           onDocumentReady={(name, ready) =>
             setDocumentReady(active.step.id, name, ready)
+          }
+          onDocumentLater={(name, later) =>
+            setDocumentLater(active.step.id, name, later)
           }
           note={notes[active.step.id] ?? ""}
           onSaveNote={(value) => saveNote(active.step.id, value)}

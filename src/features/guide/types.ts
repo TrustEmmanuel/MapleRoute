@@ -10,6 +10,7 @@ export type StepDocument = {
   description?: string;
   whereToGetIt?: string;
   link?: string;
+  optional?: boolean;
 };
 
 export type StepHighlight = {

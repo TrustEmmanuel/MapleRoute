@@ -5,6 +5,7 @@ const ACCOUNT_BASES = [
   "mapleroute.crs.draft",
   "mapleroute.guide.progress",
   "mapleroute.guide.documents",
+  "mapleroute.guide.documents-later",
   "mapleroute.guide.notes",
   "mapleroute.guide.reports",
   "mapleroute.guide.prep",

@@ -92,7 +92,7 @@ function parseDocuments(text: string): StepDocument[] {
     .map((line) => line.trim())
     .filter(Boolean)
     .map((line) => {
-      const [name = "", description = "", whereToGetIt = "", link = ""] = line
+      const [name = "", description = "", whereToGetIt = "", link = "", optional = ""] = line
         .split("|")
         .map((part) => part.trim());
       return {
@@ -100,6 +100,7 @@ function parseDocuments(text: string): StepDocument[] {
         description: description || undefined,
         whereToGetIt: whereToGetIt || undefined,
         link: link || undefined,
+        optional: optional.toLowerCase() === "optional" ? true : undefined,
       };
     })
     .filter((document) => document.name);
@@ -113,6 +114,7 @@ function documentsToText(documents: StepDocument[]) {
         document.description ?? "",
         document.whereToGetIt ?? "",
         document.link ?? "",
+        document.optional ? "Optional" : "",
       ].join(" | "),
     )
     .join("\n");
@@ -392,8 +394,8 @@ function StepEditor({
           label="Documents"
           value={documents}
           onChangeText={setDocuments}
-          placeholder={"Name | Why it is needed | Where to get it | https://…"}
-          helper="One per line. Leave parts empty if you don't have them."
+          placeholder={"Name | Why it is needed | Where to get it | https://… | Optional"}
+          helper="One per line, separated by a pipe. Leave parts empty if you don't have them. Add “Optional” last if the applicant can proceed without it."
           minHeight={76}
         />
         <TextArea

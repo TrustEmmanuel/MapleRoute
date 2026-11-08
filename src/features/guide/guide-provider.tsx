@@ -43,6 +43,7 @@ type GuideContextValue = {
   setAuthorMode: (value: boolean) => void;
   progress: Record<string, StepProgress>;
   documents: Record<string, boolean>;
+  documentsLater: Record<string, boolean>;
   notes: Record<string, string>;
   reports: StepReport[];
   prep: PrepInputs;
@@ -51,6 +52,7 @@ type GuideContextValue = {
   setPosition: (next: GuidePosition) => void;
   toggleStep: (stepId: string, checked: boolean) => void;
   setDocumentReady: (stepId: string, name: string, ready: boolean) => void;
+  setDocumentLater: (stepId: string, name: string, later: boolean) => void;
   saveNote: (stepId: string, note: string) => void;
   reportStep: (stepId: string, note: string) => void;
   updateStep: (step: GuideStep) => void;
@@ -190,6 +192,7 @@ function normalizeStep(
           description: asTextOrNull(document.description) ?? undefined,
           whereToGetIt: asTextOrNull(document.whereToGetIt) ?? undefined,
           link: asTextOrNull(document.link) ?? undefined,
+          optional: document.optional === true ? true : undefined,
         }))
       : [],
     commonMistakes: Array.isArray(value.commonMistakes)
@@ -275,7 +278,9 @@ function isOutdatedSeedGuide(guide: Guide | null) {
       guide?.version === "0.9.0" ||
       guide?.version === "0.10.0" ||
       guide?.version === "0.11.0" ||
-      guide?.version === "0.12.0")
+      guide?.version === "0.12.0" ||
+      guide?.version === "0.13.0" ||
+      guide?.version === "0.14.0")
   );
 }
 
@@ -345,6 +350,9 @@ export function GuideProvider({ children }: { children: ReactNode }) {
   const [authorMode, setAuthorModeState] = useState(false);
   const [progress, setProgress] = useState<Record<string, StepProgress>>({});
   const [documents, setDocuments] = useState<Record<string, boolean>>({});
+  const [documentsLater, setDocumentsLaterState] = useState<
+    Record<string, boolean>
+  >({});
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [reports, setReports] = useState<StepReport[]>([]);
   const [prep, setPrepState] = useState<PrepInputs>(EMPTY_PREP);
@@ -424,6 +432,7 @@ export function GuideProvider({ children }: { children: ReactNode }) {
     if (!signedIn) {
       setProgress({});
       setDocuments({});
+      setDocumentsLaterState({});
       setNotes({});
       setReports([]);
       setPrepState(EMPTY_PREP);
@@ -439,6 +448,10 @@ export function GuideProvider({ children }: { children: ReactNode }) {
     const documentsStored =
       readLocalValue<Record<string, boolean>>(
         userKey("mapleroute.guide.documents", accountKey),
+      ) ?? {};
+    const documentsLaterStored =
+      readLocalValue<Record<string, boolean>>(
+        userKey("mapleroute.guide.documents-later", accountKey),
       ) ?? {};
     const notesStored =
       readLocalValue<Record<string, string>>(
@@ -457,6 +470,7 @@ export function GuideProvider({ children }: { children: ReactNode }) {
 
     setProgress(progressStored);
     setDocuments(documentsStored);
+    setDocumentsLaterState(documentsLaterStored);
     setNotes(notesStored);
     setReports(reportsStored);
     setPrepState(prepStored);
@@ -562,6 +576,43 @@ export function GuideProvider({ children }: { children: ReactNode }) {
         writeLocalValue(userKey("mapleroute.guide.documents", accountKey), next);
         return next;
       });
+      if (ready) {
+        setDocumentsLaterState((current) => {
+          if (!current[key]) return current;
+          const next = { ...current, [key]: false };
+          writeLocalValue(
+            userKey("mapleroute.guide.documents-later", accountKey),
+            next,
+          );
+          return next;
+        });
+      }
+    },
+    [accountKey],
+  );
+
+  const setDocumentLater = useCallback(
+    (stepId: string, name: string, later: boolean) => {
+      const key = `${stepId}::${name}`;
+      setDocumentsLaterState((current) => {
+        const next = { ...current, [key]: later };
+        writeLocalValue(
+          userKey("mapleroute.guide.documents-later", accountKey),
+          next,
+        );
+        return next;
+      });
+      if (later) {
+        setDocuments((current) => {
+          if (!current[key]) return current;
+          const next = { ...current, [key]: false };
+          writeLocalValue(
+            userKey("mapleroute.guide.documents", accountKey),
+            next,
+          );
+          return next;
+        });
+      }
     },
     [accountKey],
   );
@@ -855,6 +906,7 @@ export function GuideProvider({ children }: { children: ReactNode }) {
       setAuthorMode,
       progress,
       documents,
+      documentsLater,
       notes,
       reports,
       prep,
@@ -863,6 +915,7 @@ export function GuideProvider({ children }: { children: ReactNode }) {
       setPosition,
       toggleStep,
       setDocumentReady,
+      setDocumentLater,
       saveNote,
       reportStep,
       updateStep,
@@ -889,6 +942,7 @@ export function GuideProvider({ children }: { children: ReactNode }) {
       setAuthorMode,
       progress,
       documents,
+      documentsLater,
       notes,
       reports,
       prep,
@@ -897,6 +951,7 @@ export function GuideProvider({ children }: { children: ReactNode }) {
       setPosition,
       toggleStep,
       setDocumentReady,
+      setDocumentLater,
       saveNote,
       reportStep,
       updateStep,

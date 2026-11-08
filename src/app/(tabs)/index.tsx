@@ -203,7 +203,8 @@ function SourceRow({
 export default function HomeScreen() {
   const { accountEmail, accountFirstName, previewMode, isLocalAccount } = useAuth();
   const { latest, loading } = useCrs();
-  const { guide, hydrated, isAdmin, progress, position } = useGuide();
+  const { guide, hydrated, isAdmin, progress, position, documentsLater } =
+    useGuide();
   const { seenId, ready: updatesReady } = useSeenUpdates();
   const {
     dueDate,
@@ -244,6 +245,20 @@ export default function HomeScreen() {
   const dueLabel = dueDate ? formatCheckInDate(dueDate) : "";
 
   const nextDocument = nextDeadline(documentDates, todayIso());
+  const deferredDocuments = useMemo(() => {
+    const items = new Map<string, { name: string; optional: boolean }>();
+    for (const item of allSteps) {
+      for (const document of item.step.requiredDocuments) {
+        if (!documentsLater[`${item.step.id}::${document.name}`]) continue;
+        const existing = items.get(document.name);
+        items.set(document.name, {
+          name: document.name,
+          optional: existing ? existing.optional && document.optional === true : document.optional === true,
+        });
+      }
+    }
+    return [...items.values()];
+  }, [allSteps, documentsLater]);
   const documentDetail = !documentsReady
     ? "Add the dates on your passport, language test, ECA, police certificate and medical exam."
     : nextDocument
@@ -590,7 +605,7 @@ export default function HomeScreen() {
                 <Pressable
                   accessibilityRole="button"
                   accessibilityLabel={
-                    started ? "Start this step" : "Get my CRS score"
+                    started ? "Continue this step" : "Get my CRS score"
                   }
                   onPress={() =>
                     router.push(started ? "/express-entry" : "/crs")
@@ -598,7 +613,7 @@ export default function HomeScreen() {
                   className="h-11 items-center justify-center rounded-control bg-canvas px-5 active:opacity-90"
                 >
                   <Text variant="button" tone="accent">
-                    {started ? "Start this step" : "Get my score"}
+                    {started ? "Continue this step" : "Get my score"}
                   </Text>
                 </Pressable>
                 <Pressable
@@ -787,6 +802,55 @@ export default function HomeScreen() {
         <Text variant="label" tone="muted">
           Keep everything current
         </Text>
+
+        {deferredDocuments.length > 0 ? (
+          <Card className="mt-3 p-5">
+            <View className="flex-row items-start justify-between gap-3">
+              <Text variant="heading">Documents to get</Text>
+              <View className="rounded-full bg-warning-surface px-2.5 py-1">
+                <Text
+                  variant="small"
+                  className="text-[11px] leading-[14px] font-inter-semibold"
+                >
+                  {deferredDocuments.length} later
+                </Text>
+              </View>
+            </View>
+            <Text variant="small" tone="muted" className="mt-1">
+              You set these aside for later. You don't need them to start — add
+              them when you have them, or change your mind in the checklist.
+            </Text>
+            <View className="mt-3">
+              {deferredDocuments.map((document) => (
+                <View
+                  key={document.name}
+                  className="flex-row items-center gap-2.5 py-1.5"
+                >
+                  <Ionicons
+                    name="time-outline"
+                    size={15}
+                    color={colors.muted}
+                  />
+                  <Text variant="small" className="flex-1">
+                    {document.name}
+                  </Text>
+                  {document.optional ? (
+                    <Text variant="small" tone="muted" className="text-[11px]">
+                      optional
+                    </Text>
+                  ) : null}
+                </View>
+              ))}
+            </View>
+            <Button
+              className="mt-4"
+              variant="secondary"
+              label="Open the checklist"
+              onPress={() => router.push("/express-entry")}
+            />
+          </Card>
+        ) : null}
+
         <View
           className={isWideWeb ? "mt-3 flex-row" : "mt-3"}
           style={{ gap: isWideWeb ? 24 : 16 }}

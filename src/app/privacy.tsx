@@ -30,7 +30,7 @@ export default function PrivacyScreen() {
             "Your first and last name, your email address, and whether you chose to stay signed in.",
             "Your CRS answers: age, marital status, education, language test results, work experience, spouse information, and factors such as a certificate, nomination, sibling in Canada, French ability or Canadian education.",
             "Your guide progress: finished steps, where you left off, preparation answers such as your NOC code, and any notes you write.",
-            "Your documents and dates: dates printed on your documents, “I have this” marks, and an IELTS band score if you add one.",
+            "Your documents and dates: dates printed on your documents, “I have this” marks, documents you marked to get later, and an IELTS band score if you add one.",
             "Your check-in reminder date, and which guide updates you have seen.",
             "If you use author mode, guide edits and images you add stay on this device.",
           ]}

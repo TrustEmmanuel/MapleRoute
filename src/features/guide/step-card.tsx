@@ -38,7 +38,9 @@ export function StepCard({
   checked,
   onToggleChecked,
   documentsReady,
+  documentsLater,
   onDocumentReady,
+  onDocumentLater,
   note,
   onSaveNote,
   onReport,
@@ -59,7 +61,9 @@ export function StepCard({
   checked: boolean;
   onToggleChecked: (checked: boolean) => void;
   documentsReady: Record<string, boolean>;
+  documentsLater: Record<string, boolean>;
   onDocumentReady: (name: string, ready: boolean) => void;
+  onDocumentLater: (name: string, later: boolean) => void;
   note: string;
   onSaveNote: (note: string) => void;
   onReport: (note: string) => void;
@@ -89,6 +93,20 @@ export function StepCard({
   const domain = sourceDomain(step.sourceUrl);
   const published = isStepPublishable(step);
   const prepDone = prepDoneCopy(step.id);
+  const compactDocuments =
+    step.requiredDocuments.length > 0 &&
+    step.requiredDocuments.every(
+      (document) => !document.description && !document.whereToGetIt && !document.link,
+    );
+  const documentsReadyCount = step.requiredDocuments.filter((document) =>
+    Boolean(documentsReady[`${step.id}::${document.name}`]),
+  ).length;
+  const documentsLaterCount = step.requiredDocuments.filter((document) =>
+    Boolean(documentsLater[`${step.id}::${document.name}`]),
+  ).length;
+  const hasOptionalDocuments = step.requiredDocuments.some(
+    (document) => document.optional,
+  );
 
   const links = [
     ...(isSafeHttpUrl(step.officialUrl)
@@ -96,6 +114,122 @@ export function StepCard({
       : []),
     ...step.extraLinks.filter((link) => isSafeHttpUrl(link.url)),
   ];
+
+  const documentChecklist = compactDocuments ? (
+    <View>
+      <View className="flex-row flex-wrap items-baseline gap-x-3 gap-y-0.5">
+        <Text variant="heading">Documents you need</Text>
+        <Text variant="small" tone="muted" className="text-[12px] leading-[18px]">
+          {documentsReadyCount} of {step.requiredDocuments.length} ready
+          {documentsLaterCount > 0 ? ` · ${documentsLaterCount} later` : ""}
+        </Text>
+      </View>
+      <Text variant="small" tone="muted" className="mt-1">
+        Have it? Choose “I have it”. Not yet? Choose “I'll get it later” and
+        we'll list it on your home page. Nothing is uploaded here.
+        {hasOptionalDocuments
+          ? " The optional items at the end won't hinder your application if you proceed without them."
+          : ""}
+      </Text>
+      <View className="mt-3 overflow-hidden rounded-card border border-line">
+        {step.requiredDocuments.map((document, index) => {
+          const ready = Boolean(
+            documentsReady[`${step.id}::${document.name}`],
+          );
+          const later = Boolean(
+            documentsLater[`${step.id}::${document.name}`],
+          );
+          const optional = document.optional === true;
+          return (
+            <View
+              key={document.name}
+              className={`px-4 py-3 ${index > 0 ? "border-t border-line" : ""}`}
+            >
+              <Text
+                variant="small"
+                tone={ready || later ? "muted" : "ink"}
+                className="text-[15px] font-inter-medium"
+              >
+                {document.name}
+              </Text>
+              <View className="mt-2 flex-row flex-wrap gap-2">
+                <Pressable
+                  accessibilityRole="radio"
+                  accessibilityState={{ checked: ready }}
+                  aria-checked={ready}
+                  accessibilityLabel={`I have ${document.name}`}
+                  onPress={() => onDocumentReady(document.name, !ready)}
+                  className={`min-h-[36px] flex-row items-center gap-1.5 rounded-full border px-3 active:opacity-80 ${
+                    ready
+                      ? "border-accent bg-danger-surface"
+                      : "border-control-line bg-canvas"
+                  }`}
+                >
+                  <Ionicons
+                    name={ready ? "checkmark-circle" : "ellipse-outline"}
+                    size={15}
+                    color={ready ? colors.accent : colors.muted}
+                  />
+                  <Text
+                    variant="small"
+                    tone={ready ? "accent" : "muted"}
+                    className="font-inter-medium"
+                  >
+                    I have it
+                  </Text>
+                </Pressable>
+                <Pressable
+                  accessibilityRole="radio"
+                  accessibilityState={{ checked: later }}
+                  aria-checked={later}
+                  accessibilityLabel={
+                    optional
+                      ? `You can proceed without ${document.name}`
+                      : `Get ${document.name} later`
+                  }
+                  onPress={() => onDocumentLater(document.name, !later)}
+                  className={`min-h-[36px] flex-row items-center gap-1.5 rounded-full border px-3 active:opacity-80 ${
+                    later
+                      ? optional
+                        ? "border-ink bg-surface"
+                        : "border-warning bg-warning-surface"
+                      : "border-control-line bg-canvas"
+                  }`}
+                >
+                  <Ionicons
+                    name={
+                      optional
+                        ? later
+                          ? "checkmark-circle"
+                          : "ellipse-outline"
+                        : later
+                          ? "time"
+                          : "time-outline"
+                    }
+                    size={15}
+                    color={
+                      later
+                        ? optional
+                          ? colors.ink
+                          : colors.warning
+                        : colors.muted
+                    }
+                  />
+                  <Text
+                    variant="small"
+                    tone={later ? "ink" : "muted"}
+                    className="font-inter-medium"
+                  >
+                    {optional ? "You can proceed without this" : "I'll get it later"}
+                  </Text>
+                </Pressable>
+              </View>
+            </View>
+          );
+        })}
+      </View>
+    </View>
+  ) : null;
 
   function focusNext() {
     setTimeout(() => {
@@ -196,7 +330,7 @@ export function StepCard({
 
       <ScreenshotViewer screenshot={screenshot ?? null} showEmpty={isAdmin} />
 
-      {step.requiredDocuments.length > 0 ? (
+      {step.requiredDocuments.length > 0 && !compactDocuments ? (
         <View className="mt-8">
           <Text variant="heading">Documents you need</Text>
           {section.position <= 11 ? (
@@ -361,6 +495,9 @@ export function StepCard({
 
       {showDoneBlock ? (
         <View className="mt-8">
+          {compactDocuments ? (
+            <View className="mb-5">{documentChecklist}</View>
+          ) : null}
           <DoneToggle
             checked={checked}
             label={prepDone?.label ?? "I've done this on the official page"}
@@ -519,6 +656,10 @@ export function StepCard({
             Edit this step
           </Text>
         </Pressable>
+      ) : null}
+
+      {!showDoneBlock && documentChecklist ? (
+        <View className="mt-8">{documentChecklist}</View>
       ) : null}
     </View>
   );
