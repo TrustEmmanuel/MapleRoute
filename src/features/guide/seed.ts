@@ -113,7 +113,7 @@ const SEED_STEPS: Record<number, GuideStep[]> = {
       position: 0,
       title: "Sign in to your IRCC secure account",
       instruction:
-        "Open the IRCC secure account page in your second tab. Sign in with your GCKey username and password, or with a Canadian Interac® Sign-In Partner.\nIf you don't have an account, register for one first. Use a password you don't use anywhere else — MapleRoute never asks for your username or password.",
+        "From this step on, MapleRoute walks through the IRCC screens with you, one at a time. Keep this guide open beside your IRCC tab and come back here after each screen — following both in step is the key to an accurate profile.\nOpen the IRCC secure account page in your second tab. Sign in with your GCKey username and password, or with a Canadian Interac® Sign-In Partner.\nIf you don't have an account, register for one first. Use a password you don't use anywhere else — MapleRoute never asks for your username or password.",
       officialUrl: SECURE_ACCOUNT_URL,
       sourceUrl: SECURE_ACCOUNT_URL,
       officialPageName: "IRCC secure account",
@@ -1658,7 +1658,7 @@ export function createSeedGuide(): Guide {
     title: GUIDE_TITLE,
     description:
       "A step-by-step companion for the official IRCC Express Entry profile. Keep canada.ca open in another tab and follow along here. MapleRoute is an independent guide and is not affiliated with IRCC.",
-    version: "0.15.0",
+    version: "0.16.0",
     status: "draft",
     sections: SECTION_TITLES.map((title, index) => ({
       id: sectionId(index),

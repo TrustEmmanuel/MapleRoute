@@ -280,7 +280,8 @@ function isOutdatedSeedGuide(guide: Guide | null) {
       guide?.version === "0.11.0" ||
       guide?.version === "0.12.0" ||
       guide?.version === "0.13.0" ||
-      guide?.version === "0.14.0")
+      guide?.version === "0.14.0" ||
+      guide?.version === "0.15.0")
   );
 }
 
